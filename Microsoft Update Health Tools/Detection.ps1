@@ -19,11 +19,14 @@ foreach ($key in $UninstallKeys)
         $Entry = (Get-ChildItem -Path $key) | Where {$_.GetValue('DisplayName') -eq "Microsoft Update Health Tools"} 
         If ($Entry)
         {
-            $Results += [PSCustomObject]@{
-                DisplayName = $Entry.GetValue("DisplayName")
-                DisplayVersion = $Entry.GetValue("DisplayVersion")
-                InstallDate = $Entry.GetValue("InstallDate")
-                GUID = $Entry.pschildname
+            foreach ($item in $Entry) 
+            {
+                $Results += [PSCustomObject]@{
+                    DisplayName = $item.GetValue("DisplayName")
+                    DisplayVersion = $item.GetValue("DisplayVersion")
+                    InstallDate = $item.GetValue("InstallDate")
+                    GUID = $item.pschildname
+                }
             }
         }
     }
