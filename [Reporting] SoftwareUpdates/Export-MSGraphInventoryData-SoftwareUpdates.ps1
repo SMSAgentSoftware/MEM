@@ -17,8 +17,8 @@ $ProactiveRemediationsScriptGUID = "<GUID>" # GUID of the Proactive remediations
 
 $ProgressPreference = 'SilentlyContinue'
 $VerbosePreference = 'Continue'
-$TempFileName = "$(Get-Random)"
-$FinalFileName = "$(Get-Random)"
+$TempFileName = "SoftwareUpdatesTemp"
+$FinalFileName = "SoftwareUpdatesData"
 $Destination = "$env:Temp"
 
 
