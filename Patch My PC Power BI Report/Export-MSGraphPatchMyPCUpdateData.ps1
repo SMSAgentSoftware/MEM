@@ -328,12 +328,29 @@ function Request-ExportJobs {
     foreach ($AppId in $AppIDs)
     {
         Write-host "Requesting $AppId"
-        $Report = New-MSGraphExportJob -ReportName DeviceInstallStatusByApp -Filter "(ApplicationId eq '$AppId')"  
-        switch ($Type)
-        {
-            "Apps" {[void]$AppExportRequests.Add($Report)}
-            "Updates" {[void]$UpdateExportRequests.Add($Report)}
+        $RetryCount = 0
+        do {
+            $Report = New-MSGraphExportJob -ReportName DeviceInstallStatusByApp -Filter "(ApplicationId eq '$AppId')" 
+            If ($Report.StatusCode -ne 201) 
+            {
+                Write-Warning "Request for $AppId returned $($Report.StatusCode)). Retrying..."
+                $RetryCount ++
+                Start-Sleep -Seconds 10
+            }
         }
+        Until ($Report.StatusCode -eq 201 -or $RetryCount -ge 5)
+        If ($Report.StatusCode -ne 201)
+        {
+            Write-Warning "Gave up requesting export job for $AppId!"
+        }
+        else 
+        {
+            switch ($Type)
+            {
+                "Apps" {[void]$AppExportRequests.Add($Report)}
+                "Updates" {[void]$UpdateExportRequests.Add($Report)}
+            }
+        }   
     }
 }
 
