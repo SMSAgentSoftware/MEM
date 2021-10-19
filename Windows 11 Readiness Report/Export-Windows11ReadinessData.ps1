@@ -7,6 +7,7 @@
 ##############
 # Change log #
 ##############
+# 2021-10-19  |  Removed the "managedBy" field from the results to enable easy elimination of duplicate results
 # 2021-10-05  |  First release
 
 
@@ -52,7 +53,7 @@ $null = Connect-AzAccount -Identity
 
 
 # Graph URI
-$URI = "https://graph.microsoft.com/beta/deviceManagement/userExperienceAnalyticsWorkFromAnywhereMetrics('allDevices')/metricDevices?`$select=id%2cdeviceName%2cmanagedBy%2cosDescription%2cosVersion%2cupgradeEligibility%2cazureAdJoinType%2cupgradeEligibility%2cramCheckFailed%2cstorageCheckFailed%2cprocessorCoreCountCheckFailed%2cprocessorSpeedCheckFailed%2ctpmCheckFailed%2csecureBootCheckFailed%2cprocessorFamilyCheckFailed%2cprocessor64BitCheckFailed%2cosCheckFailed&dtFilter=all"
+$URI = "https://graph.microsoft.com/beta/deviceManagement/userExperienceAnalyticsWorkFromAnywhereMetrics('allDevices')/metricDevices?`$select=id%2cdeviceName%2cosDescription%2cosVersion%2cupgradeEligibility%2cazureAdJoinType%2cupgradeEligibility%2cramCheckFailed%2cstorageCheckFailed%2cprocessorCoreCountCheckFailed%2cprocessorSpeedCheckFailed%2ctpmCheckFailed%2csecureBootCheckFailed%2cprocessorFamilyCheckFailed%2cprocessor64BitCheckFailed%2cosCheckFailed&dtFilter=all"
 
 # Get data from Graph with some error handling
 $Response = Invoke-MyGraphGetRequest -URL $URI 
@@ -112,8 +113,10 @@ If ($JsonResponse.'@odata.nextLink')
     } until ($null -eq $JsonResponse.'@odata.nextLink')
 }
 
-# Filter out the various readiness categories
+# Create a unique result set of Windows 10 devices
 $AllDevices = $DeviceData | where {$_.osVersion -like "10.0.*"}
+$Properties = ($AllDevices[0] | Get-Member -MemberType NoteProperty).Name
+$AllDevices = $AllDevices | Sort-Object -Property $Properties -Unique
 
 # output some numbers
 Write-Verbose "Total devices: $($AllDevices.count)"
