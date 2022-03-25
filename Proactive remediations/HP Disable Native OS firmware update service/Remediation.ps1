@@ -44,6 +44,9 @@ Function Set-HPBIOSSetting {
         4 {$ResultDescription = "Failed"}
         5 {$ResultDescription = "Invalid Parameter"}
         6 {$ResultDescription = "Access Denied"}
+        32768 {$ResultDescription = "Security Policy is violated"}
+        32769 {$ResultDescription = "Security Condition is not met"}
+        32770  {$ResultDescription = "Security Configuration"}
         default {$ResultDescription = "Unknown"}
     }
     Return $ResultDescription
