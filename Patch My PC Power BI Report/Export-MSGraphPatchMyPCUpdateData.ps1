@@ -330,7 +330,7 @@ function Request-ExportJobs {
         Write-host "Requesting $AppId"
         $RetryCount = 0
         do {
-            $Report = New-MSGraphExportJob -ReportName DeviceInstallStatusByApp -Filter "(ApplicationId eq '$AppId')" 
+            $Report = New-MSGraphExportJob -ReportName DeviceInstallStatusByApp -Filter "((InstallState eq '1') or (InstallState eq '2') or (InstallState eq '3') or (InstallState eq '5') or (InstallState eq '4') or (InstallState eq '99')) and (ApplicationId eq '$AppId')" 
             If ($Report.StatusCode -ne 201) 
             {
                 Write-Warning "Request for $AppId returned $($Report.StatusCode)). Retrying..."
