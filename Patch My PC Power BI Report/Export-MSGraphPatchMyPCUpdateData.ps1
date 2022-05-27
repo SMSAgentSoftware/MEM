@@ -244,48 +244,82 @@ Function Export-PmpAppsList {
     $PmpUpdates | Export-Csv -Path $Destination\PmpUpdates.csv -NoTypeInformation -Force
 }
 
+# Function to get a device install status report for a list of applications
+Function Get-DeviceInstallStatusReport {
+    param($AppIDs,$Type)
+    
+    # Process each app
+    foreach ($AppId in $AppIDs)
+    {
+        Write-Output "Processing $AppId"
+        $i = 0
+        $Fail = $false   
+        $DataTable = [System.Data.DataTable]::new() 
+        $MasterArray = [System.Collections.ArrayList]::new()
+        do {
+            $bodyHash = [ordered]@{
+                skip = $i
+                top = 50
+                filter = "((InstallState eq '1') or (InstallState eq '2') or (InstallState eq '3') or (InstallState eq '5') or (InstallState eq '4') or (InstallState eq '99')) and (ApplicationId eq '$AppID')"
+            }
+            $bodyJson = $bodyHash | ConvertTo-Json -Depth 3
 
-# Function to create an exportJob request in Graph
-Function script:New-MSGraphExportJob {
-    Param($ReportName,$Filter)
+            $URL = "https://graph.microsoft.com/beta/deviceManagement/reports/getDeviceInstallStatusReport"
+            $Headers = @{'Authorization'="Bearer " + $accessToken; 'Accept'="application/json"}
+            $GraphRequest = Invoke-LocalGraphRequest -URL $URL -Headers $Headers -Method POST -Body $bodyJson -ContentType "application/json"
+            If ($GraphRequest.StatusCode -eq 200)
+            {
+                $JSONresponse = [System.Text.Encoding]::UTF8.GetString($GraphRequest.Content) | ConvertFrom-Json
+                If ($JSONresponse.Values.Count -ge 1)
+                {     
+                    If ($DataTable.Columns.Count -eq 0)
+                    {
+                        foreach ($column in $JSONresponse.Schema)
+                        {
+                            [void]$DataTable.Columns.Add($Column.Column)
+                        }
+                    }
+                    foreach ($value in $JSONresponse.Values)
+                    {
+                        [void]$DataTable.Rows.Add($value)
+                    }
+                }
+                $i = $i + 50
+            }
+            Else
+            {
+                $Fail = $true
+                Write-Warning "Graph request returned status code $($GraphRequest.StatusCode)"
+            }
+        }
+        Until ($JSONresponse.Values.Count -eq 0 -or $Fail -eq $true)
 
-    $bodyHash = [ordered]@{
-        reportName = $ReportName
-        filter = $Filter
+        foreach ($Row in $DataTable.Rows)
+        {
+            [void]$MasterArray.Add($Row)
+        } 
+        If (($MasterArray.DeviceId | Select -Unique).Count -lt $MasterArray.Count)
+        {
+            [array]$UniqueResults = Remove-MSGraphExportJobDuplicates -Collection $MasterArray
+            switch ($Type) {
+                "Updates" {foreach ($UniqueResult in $UniqueResults){[void]$UpdateDeviceInstallStatusResults.Add($UniqueResult)}}
+                "Apps" {foreach ($UniqueResult in $UniqueResults){[void]$AppDeviceInstallStatusResults.Add($UniqueResult)}}
+            }
+        }
+        else 
+        {
+            switch ($Type) {
+                "Updates" {foreach ($Result in $MasterArray){[void]$UpdateDeviceInstallStatusResults.Add($Result)}}
+                "Apps" {foreach ($Result in $MasterArray){[void]$AppDeviceInstallStatusResults.Add($Result)}}
+            }
+        }
     }
-    $bodyJson = $bodyHash | ConvertTo-Json -Depth 3
 
-    $URL = "https://graph.microsoft.com/beta/deviceManagement/reports/exportJobs"
-    $Headers = @{'Authorization'="Bearer " + $accessToken; 'Accept'="application/json"}
-    $GraphRequest = Invoke-LocalGraphRequest -URL $URL -Headers $Headers -Method POST -Body $bodyJson -ContentType "application/json"
-
-    Return $GraphRequest
-}
-
-# Function to receive an export Job from a request
-Function script:Receive-MSGraphExportJob {
-    Param($ExportJobRequest)
-    $Id = ($ExportJobRequest.Content | ConvertFrom-Json).Id
-    $AppID = ($ExportJobRequest.Content | convertfrom-json).filter.split()[-1].Replace("'",'').Replace(")",'')
-    $FileName = "$AppId.zip"
-    do {
-        $URL = "https://graph.microsoft.com/beta/deviceManagement/reports/exportJobs('$Id')"
-        $Headers = @{'Authorization'="Bearer " + $accessToken; 'Accept'="application/json"}
-        $WebResponse = Invoke-LocalGraphRequest -URL $URL -Headers $Headers -Method GET
-        $ReponseJson = $WebResponse.Content | ConvertFrom-Json
-        $Status = $ReponseJson.status
-        Start-Sleep -Seconds 1
+    # Export the final data set
+    switch ($Type) {
+        "Updates" {$UpdateDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpUpdatesDeviceInstallStatusReport.csv -NoTypeInformation -Force}
+        "Apps" {$AppDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpAppsDeviceInstallStatusReport.csv -NoTypeInformation -Force}
     }
-    Until ($Status -eq "Completed")
-
-    $DownloadUrl = $ReponseJson.url   
-    try {
-        $DownloadRequest = Invoke-WebRequest -Uri $DownloadUrl -OutFile "$Destination\$FileName" -UseBasicParsing -PassThru
-    }
-    catch {
-        $DownloadRequest = $_.Exception.Response
-    }
-    Return $DownloadRequest
 }
 
 # Function to filter out duplicates for an export job from Graph
@@ -322,83 +356,11 @@ Function script:Remove-MSGraphExportJobDuplicates {
 
 }
 
-# Function to request the export jobs
-function Request-ExportJobs {
-    param($AppIDs,$Type)
-    foreach ($AppId in $AppIDs)
-    {
-        Write-host "Requesting $AppId"
-        $RetryCount = 0
-        do {
-            $Report = New-MSGraphExportJob -ReportName DeviceInstallStatusByApp -Filter "((InstallState eq '1') or (InstallState eq '2') or (InstallState eq '3') or (InstallState eq '5') or (InstallState eq '4') or (InstallState eq '99')) and (ApplicationId eq '$AppId')" 
-            If ($Report.StatusCode -ne 201) 
-            {
-                Write-Warning "Request for $AppId returned $($Report.StatusCode)). Retrying..."
-                $RetryCount ++
-                Start-Sleep -Seconds 10
-            }
-        }
-        Until ($Report.StatusCode -eq 201 -or $RetryCount -ge 5)
-        If ($Report.StatusCode -ne 201)
-        {
-            Write-Warning "Gave up requesting export job for $AppId!"
-        }
-        else 
-        {
-            switch ($Type)
-            {
-                "Apps" {[void]$AppExportRequests.Add($Report)}
-                "Updates" {[void]$UpdateExportRequests.Add($Report)}
-            }
-        }   
-    }
-}
-
-# Function to receive and export the export jobs
-Function Receive-ExportJobs{
-    param($Type)
-    switch ($Type)
-    {
-        "Updates" {$ExportRequests = $UpdateExportRequests}
-        "Apps" {$ExportRequests = $AppExportRequests}
-    }
-    foreach ($ExportRequest in $ExportRequests)
-    {
-        $Job = Receive-MSGraphExportJob $ExportRequest
-        $AppID = ($ExportRequest.Content | convertfrom-json).filter.split()[-1].Replace("'",'').Replace(")",'')
-        Write-host "Received $AppId"
-        $FileName = "$AppId.zip"
-        Unblock-File -Path "$Destination\$FileName"
-        $CsvFile = (Expand-Archive -Path "$Destination\$FileName" -DestinationPath $Destination -Force -Verbose) 4>&1
-        $CsvFileName = $CsvFile[-1].ToString().Split('\')[-1].Replace("'.",'')
-        $File = Get-Childitem -Path $Destination\$CsvFileName -File
-        [Array]$Results = Import-Csv $File.FullName -UseCulture    
-        If (($Results.DeviceId | Select -Unique).Count -lt $Results.Count)
-        {
-            [System.Collections.ArrayList]$ArrayList = $Results
-            [array]$UniqueResults = Remove-MSGraphExportJobDuplicates -Collection $ArrayList
-            switch ($Type) {
-                "Updates" {foreach ($UniqueResult in $UniqueResults){[void]$UpdateDeviceInstallStatusResults.Add($UniqueResult)}}
-                "Apps" {foreach ($UniqueResult in $UniqueResults){[void]$AppDeviceInstallStatusResults.Add($UniqueResult)}}
-            }
-        }
-        else 
-        {
-            switch ($Type) {
-                "Updates" {foreach ($Result in $Results){[void]$UpdateDeviceInstallStatusResults.Add($Result)}}
-                "Apps" {foreach ($Result in $Results){[void]$AppDeviceInstallStatusResults.Add($Result)}}
-            }
-        }
-    }
-    switch ($Type) {
-        "Updates" {$UpdateDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpUpdatesDeviceInstallStatusReport.csv -NoTypeInformation -Force}
-        "Apps" {$AppDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpAppsDeviceInstallStatusReport.csv -NoTypeInformation -Force}
-    }
-}
 
 ###############################################
 ## Export list of PMP applications in Intune ##
 ###############################################
+Write-output "Exporting PMP apps list"
 Export-PmpAppsList
 
 
@@ -406,7 +368,9 @@ Export-PmpAppsList
 #################################
 ## Export the Overview reports ##
 #################################
+Write-output "Exporting status overview report for apps"
 Export-StatusReport -ReportOutputName "PmpAppsStatusOverviewReport" -ReportEntityName "getAppStatusOverviewReport" -ApplicationData $PmpApps
+Write-output "Exporting status overview report for updates"
 Export-StatusReport -ReportOutputName "PmpUpdatesStatusOverviewStatusReport" -ReportEntityName "getAppStatusOverviewReport" -ApplicationData $PmpUpdates
 
 
@@ -414,10 +378,10 @@ Export-StatusReport -ReportOutputName "PmpUpdatesStatusOverviewStatusReport" -Re
 ############################################
 ## Request and Export the Install reports ##
 ############################################
-Request-ExportJobs -AppIDs $PmpUpdates.Id -Type "Updates"
-Request-ExportJobs -AppIDs $PmpApps.Id -Type "Apps"
-Receive-ExportJobs -Type "Updates"
-Receive-ExportJobs -Type "Apps"
+Write-output "Retrieving device install status reports for apps"
+Get-DeviceInstallStatusReport -AppIDs $PmpApps.Id -Type "Apps"
+Write-output "Retrieving device install status reports for updates"
+Get-DeviceInstallStatusReport -AppIDs $PmpUpdates.Id -Type "Updates"
 
 
 
@@ -425,6 +389,7 @@ Receive-ExportJobs -Type "Apps"
 ## UPLOAD REPORTS TO AZURE BLOB STORAGE ##
 ##########################################
 $StorageAccount = Get-AzStorageAccount -Name $StorageAccount -ResourceGroupName $ResourceGroup
+Write-output "Uploading CSV files to Azure storage account"
 "PmpApps.csv","PmpUpdates.csv","PmpAppsDeviceInstallStatusReport.csv","PmpUpdatesDeviceInstallStatusReport.csv","PmpAppsStatusOverviewReport.csv","PmpUpdatesStatusOverviewStatusReport.csv" | foreach {
     try {
         $File = $_
