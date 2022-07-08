@@ -326,29 +326,13 @@ Function Get-DeviceInstallStatusReport {
 Function script:Remove-MSGraphExportJobDuplicates {
     Param([System.Collections.ArrayList]$Collection)
 
-    # Filter out duplicate DeviceIds into an array
-    [array]$DeviceIDs = $Collection.DeviceId
-    $NonDuplicatesHash = @{}
-    $DuplicatesArray = [System.Collections.ArrayList]::new()
-    foreach ($DeviceID in $DeviceIDs)
+    $GroupedCollection = $Collection | Group-Object -Property DeviceId
+    foreach ($Item in ($GroupedCollection | Where {$_.Count -gt 1}))
     {
-        try {
-            $NonDuplicatesHash.Add($DeviceID,0)
-        }
-        catch [System.Management.Automation.MethodInvocationException] {
-            [void]$DuplicatesArray.Add($DeviceID)
-        }
-    }
-
-    # Remove all but the latest (ModifiedTime) entry in the collection for each duplicate
-    $DuplicatesArray = $DuplicatesArray | Select -Unique	
-    foreach ($Duplicate in $DuplicatesArray)
-    {
-        $Array = $Collection.Where({$_.DeviceId -eq $Duplicate})
-        $Others = $Array | Sort LastModifiedDateTime -Descending | Select -Skip 1
-        foreach ($item in $Others)
+        $Others = $Item.Group | Sort LastModifiedDateTime -Descending | Select -Skip 1
+        foreach ($entry in $Others)
         {
-            $Collection.Remove($item)
+            $Collection.Remove($entry)
         }
     }
 
