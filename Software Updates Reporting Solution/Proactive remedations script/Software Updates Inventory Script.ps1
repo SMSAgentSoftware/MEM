@@ -1,13 +1,13 @@
-################################
-## INVENTORY GATHERING SCRIPT ##
-################################
+###########################################
+## SOFTWARE UPDATE DATA GATHERING SCRIPT ##
+###########################################
 
-$ProgressPreference = 'SilentlyContinue'
 $FullInventorySchedule = 1 # DAYS MINIMUM number of days between sending a full inventory
 $DeltaInventorySchedule = 1 #0.416 # HOURS MINIMUM number of hours between sending a delta inventory. 0.416 = 1hr
 $WorkspaceID = "<WorkspaceID>" # WorkspaceID of the Log Analytics workspace
 $PrimaryKey = "<PrimaryKey>" # Primary Key of the Log Analytics workspace
 $ParentDirectoryName = "Contoso" # eg Company or domain name
+$ProgressPreference = 'SilentlyContinue'
 
 # Create a 'master' custom class to contain all the inventory data
 class MasterClass {
