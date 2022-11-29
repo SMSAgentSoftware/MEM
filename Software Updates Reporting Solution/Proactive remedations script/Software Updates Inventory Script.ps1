@@ -19,6 +19,7 @@ class MasterClass {
     $SU_WUPolicySettings
     $SU_WUClientInfo
     $SU_CompatMarkers
+    $SU_WindowsSetup
 }
 $MasterClass = [MasterClass]::new()
 
@@ -189,9 +190,15 @@ Function Get-AvailableUpdatesOnline {
             }
         }
         # categorise the update
+        # Use this array for Windows cumulative update names that may display in different languages
+        $CUNameArray = @(
+            'Cumulative Update for' # English
+            'Kumulatives Update für' #  German
+            'Aggiornamento cumulativo di' # Italian
+        )
         foreach ($Update in $Updates)
         {
-            If ($Update.Name -match "Feature update to")
+            If ($Update.Name -match "Feature update to" -or $Update.Name.StartsWith("Windows 11"))
             {
                 $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Feature update"
             }
@@ -199,15 +206,27 @@ Function Get-AvailableUpdatesOnline {
             {
                 $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Windows upgrade"
             }
-            ElseIf (($Update.Name -match "Cumulative Update for" -or $Update.Name -match "Kumulatives Update für") -and $UpdateEvent.UpdateName -notmatch ".NET Framework")
+            ElseIf (($Update.Name -match ($CUNameArray -join "|")) -and $Update.Name -notmatch ".NET Framework")
             {
                 $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Windows cumulative update"
+            }
+            ElseIf ($Update.Name -match ".NET Framework")
+            {
+                $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value ".NET Framework Update"
+            }
+            ElseIf ($Update.Name -match "SQL Server")
+            {
+                $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "SQL Server Update"
+            }
+            ElseIf ($Update.Name -match "Microsoft Defender Antivirus")
+            {
+                $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Microsoft Defender Antivirus Update"
             }
             ElseIf ($Update.Name -match "\(KB")
             {
                 $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Other Microsoft update"
             }
-            ElseIf ($Update.Name -like "* - * - *")
+            ElseIf ($Update.Name -like "* - * - *" -or $Update.Name -match "driver update")
             {
                 $Update | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Driver update"
             }
@@ -621,11 +640,17 @@ If ($UpdateEvents.Count -ge 1)
     $ServiceIDs = (New-Object -ComObject Microsoft.Update.ServiceManager).Services | Select Name,ServiceId
 
     # Add some calculated properties to each event
+    # Use this array for Windows cumulative update names that may display in different languages
+    $CUNameArray = @(
+        'Cumulative Update for'
+        'Kumulatives Update für'
+        'Aggiornamento cumulativo di'
+    )
     foreach ($UpdateEvent in $UpdateEventArray)
     {
         $UpdateEvent | Add-Member -MemberType NoteProperty -Name "ServiceName" -Value ($ServiceIDs | where {$_.ServiceID -eq $UpdateEvent.ServiceGuid}).Name
         # categorise the updates
-        If ($UpdateEvent.UpdateName -match "Feature update to")
+        If ($UpdateEvent.UpdateName -match "Feature update to" -or $UpdateEvent.UpdateName.StartsWith("Windows 11"))
         {
             $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Feature update"
         }
@@ -633,15 +658,27 @@ If ($UpdateEvents.Count -ge 1)
         {
             $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Windows upgrade"
         }
-        ElseIf ($UpdateEvent.UpdateName -match "Cumulative Update for" -and $UpdateEvent.UpdateName -notmatch ".NET Framework")
+        ElseIf (($UpdateEvent.UpdateName -match ($CUNameArray -join "|")) -and $UpdateEvent.UpdateName -notmatch ".NET Framework")
         {
             $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Windows cumulative update"
         }
+        ElseIf ($UpdateEvent.UpdateName -match ".NET Framework")
+        {
+            $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value ".NET Framework Update"
+        }
+        ElseIf ($UpdateEvent.UpdateName -match "SQL Server")
+        {
+            $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "SQL Server Update"
+        }
+        ElseIf ($UpdateEvent.UpdateName -match "Microsoft Defender Antivirus")
+        {
+            $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Microsoft Defender Antivirus Update"
+        }
         ElseIf ($UpdateEvent.UpdateName -match "\(KB")
         {
-            $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Other Microsoft update"
+            $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Common Microsoft update"
         }
-        ElseIf ($UpdateEvent.UpdateName -like "* - * - *")
+        ElseIf ($UpdateEvent.UpdateName -like "* - * - *" -or $UpdateEvent.UpdateName -match "driver update")
         {
             $UpdateEvent | Add-Member -MemberType NoteProperty -Name "UpdateType" -Value "Driver update"
         }
@@ -887,6 +924,64 @@ if ($SubKeyNames)
     }
 }
 $MasterClass.SU_CompatMarkers = $CompatMarkers
+#endregion
+
+###################
+## WINDOWS SETUP ##
+###################
+#region WindowsSetup
+$BoxResult = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Volatile -Name BoxResult -ErrorAction SilentlyContinue | Select -ExpandProperty BoxResult
+If ($null -ne $BoxResult -and $BoxResult -ne 0)
+{
+    $BoxResult = "0x" + "$('{0:X4}' -f $BoxResult)"
+    $FailureCount = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Tracking -Name FailureCount -ErrorAction SilentlyContinue | Select -ExpandProperty FailureCount
+    $ProfileName = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name ProfileName -ErrorAction SilentlyContinue | Select -ExpandProperty ProfileName
+    $ProfileGuid = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name ProfileGuid -ErrorAction SilentlyContinue | Select -ExpandProperty ProfileGuid
+    $SetupDiagVersion = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name SetupDiagVersion -ErrorAction SilentlyContinue | Select -ExpandProperty SetupDiagVersion
+    $DateTime = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name DateTime -ErrorAction SilentlyContinue | Select -ExpandProperty DateTime
+    $FailureData = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name FailureData -ErrorAction SilentlyContinue | Select -ExpandProperty FailureData
+    $FailureDetails = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name FailureDetails -ErrorAction SilentlyContinue | Select -ExpandProperty FailureDetails
+    $HostOSVersion = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name HostOSVersion -ErrorAction SilentlyContinue | Select -ExpandProperty HostOSVersion
+    $TargetOSVersion = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name TargetOSVersion -ErrorAction SilentlyContinue | Select -ExpandProperty TargetOSVersion
+    $UpgradeStartTime = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name UpgradeStartTime -ErrorAction SilentlyContinue | Select -ExpandProperty UpgradeStartTime
+    $UpgradeEndTime = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name UpgradeEndTime -ErrorAction SilentlyContinue | Select -ExpandProperty UpgradeEndTime
+    $UpgradeElapsedTime = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name UpgradeElapsedTime -ErrorAction SilentlyContinue | Select -ExpandProperty UpgradeElapsedTime
+    $RollbackStartTime = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name RollbackStartTime -ErrorAction SilentlyContinue | Select -ExpandProperty RollbackStartTime
+    $RollbackEndTime = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name RollbackEndTime -ErrorAction SilentlyContinue | Select -ExpandProperty RollbackEndTime
+    $RollbackElapsedTime = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name RollbackElapsedTime -ErrorAction SilentlyContinue | Select -ExpandProperty RollbackElapsedTime
+    $Remediation = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\setupdiag\results -Name Remediation -ErrorAction SilentlyContinue | Select -ExpandProperty Remediation
+}
+$SetupHostResult = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Volatile -Name SetupHostResult -ErrorAction SilentlyContinue | Select -ExpandProperty SetupHostResult
+if ($null -ne $SetupHostResult)
+{
+    $DownlevelProductName = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Volatile -Name DownlevelProductName -ErrorAction SilentlyContinue | Select -ExpandProperty DownlevelProductName
+    $DownlevelBuildNumber = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Volatile -Name DownlevelBuildNumber -ErrorAction SilentlyContinue | Select -ExpandProperty DownlevelBuildNumber
+}
+$OSInstallDate = Get-CimInstance -ClassName Win32_OperatingSystem -Property InstallDate -ErrorAction SilentlyContinue | Select -ExpandProperty InstallDate
+[PSCustomObject]$WindowsSetup = [Ordered]@{
+    BoxResult = $BoxResult
+    FailureCount = $FailureCount
+    ProfileName = $ProfileName
+    ProfileGuid = $ProfileGuid
+    SetupDiagVersion = $SetupDiagVersion
+    DateTime = $DateTime
+    FailureData = $FailureData
+    FailureDetails = $FailureDetails
+    HostOSVersion = $HostOSVersion
+    TargetOSVersion = $TargetOSVersion
+    UpgradeStartTime = $UpgradeStartTime
+    UpgradeEndTime = $UpgradeEndTime
+    UpgradeElapsedTime = $UpgradeElapsedTime
+    RollbackStartTime = $RollbackStartTime
+    RollbackEndTime = $RollbackEndTime
+    RollbackElapsedTime = $RollbackElapsedTime
+    Remediation = $Remediation
+    SetupHostResult = $SetupHostResult
+    DownlevelProductName = $DownlevelProductName
+    DownlevelBuildNumber = $DownlevelBuildNumber
+    OSInstallDate = $OSInstallDate
+}
+$MasterClass.SU_WindowsSetup = $WindowsSetup
 #endregion
 
 #endregion
