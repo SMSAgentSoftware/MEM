@@ -570,6 +570,7 @@ Function script:Get-PatchTuesday {
     return $patchTuesday
 }
 
+# Function to get Windows update error codes from MS
 Function Get-WUErrorCodes {
     # create a table
     $ErrorCodeTable = [System.Data.DataTable]::new()
@@ -696,6 +697,192 @@ Function Get-WUErrorCodes {
     until ($i -ge $headers.count)
     Return $ErrorCodeTable
 }
+
+# Function to get Windows setup error codes from MS
+Function Get-WindowsSetupErrorCodes {
+    $ProgressPreference = 'SilentlyContinue'
+    $URL = "https://learn.microsoft.com/en-us/troubleshoot/windows-client/deployment/windows-10-upgrade-resolution-procedures"
+    $tempFile = [System.IO.Path]::GetTempFileName() 
+    Invoke-WebRequest -URI $URL -OutFile $tempFile -UseBasicParsing 
+    $htmlarray = Get-Content $tempFile -ReadCount 0
+    [System.IO.File]::Delete($tempFile)
+
+    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -notmatch "More information"}
+    $dataCells = $htmlarray | Select-String -SimpleMatch "<td>", "<td "
+
+    $ErrorCodeTable = [System.Data.DataTable]::new()
+    $ErrorCodeTable.Columns.AddRange(@("ErrorCode","ExtendedCode","Description","Message","Category"))
+
+    # ref: https://www.dotnetperls.com/remove-html-tags
+    function Remove-HTMLFromString {
+        Param ($htmlstring)
+        $array = [Char[]]::new($htmlstring.length)
+        [int]$arrayIndex = 0
+        [bool]$Inside = $false
+
+        for ($i=0; $i -lt $htmlstring.Length;$i++)
+        {
+            [char]$let = $htmlstring[$i]
+            if ($let -eq "<")
+            {
+                $Inside = $true
+                Continue
+            }
+            if ($let -eq ">")
+            {
+                $Inside = $false
+                Continue
+            }
+            if (!($Inside))
+            {
+                $array[$arrayIndex] = $let
+                $arrayIndex++
+            }
+        }
+        return [System.String]::new([char[]]$array,[int]0,[int]$arrayIndex)
+    }
+
+    # process each header
+    $i = 1
+    do {
+        foreach ($header in $headers)
+        {
+            $lineNumber = $header.LineNumber
+            $nextHeader = $headers[$i]
+            If ($null -ne $nextHeader)
+            {
+                $nextHeaderLineNumber = $nextHeader.LineNumber
+                $cells = $dataCells | Where {$_.LineNumber -gt $lineNumber -and $_.LineNumber -lt $nextHeaderLineNumber}
+            }
+            else 
+            {
+                $cells = $dataCells | Where {$_.LineNumber -gt $lineNumber}  
+            }
+
+            # process each cell
+            $totalCells = $cells.Count
+            $t = 0
+            do {         
+                $WebErrorCode = "$($cells[$t].ToString().Replace('<br>',',').Split('>').Split('<')[2])"
+                $WebErrorCodeArray = $WebErrorCode.Split(',')
+                If ($WebErrorCodeArray.Count -gt 1)
+                {
+                    1..($WebErrorCodeArray.Count) | foreach {
+                        $Row = $ErrorCodeTable.NewRow()
+                        $Cell = $WebErrorCodeArray[($_ -1)]
+                        "ErrorCode","ExtendedCode","Message","Description" | foreach {
+                            If ($_ -eq "ErrorCode")
+                            {
+                                If ($Cell -match "-")
+                                {
+                                    $CellSplit = $Cell.Split('-')[0].Trim()
+                                    If ($CellSplit.StartsWith('80'))
+                                    {
+                                        $CellSplit = "0x$($CellSplit)"
+                                    }
+                                    $Row["$_"] = $CellSplit
+                                }
+                                else 
+                                {
+                                    $Row["$_"] = $Cell
+                                }
+                            }
+                            ElseIf ($_ -eq "ExtendedCode")
+                            {
+                                If ($Cell -match "-")
+                                {
+                                    $CellSplit = $Cell.Split('-')[1].Trim()
+                                    $Row["$_"] = $CellSplit
+                                }
+                                else 
+                                {
+                                    $Row["$_"] = $null
+                                }
+                            }
+                            else 
+                            {
+                                $Row["$_"] = Remove-HTMLFromString "$($cells[$t].ToString().Replace('<br>',[Environment]::NewLine).Replace('Â','').Replace('&quot;','""').Replace('&gt;','-'))"
+                            }
+                            If ($_ -ne "ExtendedCode"){$t ++}
+                        }
+                        $Row["Category"] = "$($header.ToString().Split('>').Split('<')[2])"
+                        [void]$ErrorCodeTable.Rows.Add($Row)
+                        1..3 | foreach {$t --}
+                    }
+                    1..($WebErrorCodeArray.Count) | foreach {$t++}
+                }
+                else 
+                {
+                    $Row = $ErrorCodeTable.NewRow() 
+                    "ErrorCode","ExtendedCode","Message","Description" | foreach {
+                        $Cell = "$($cells[$t].ToString().Replace('<br>',[Environment]::NewLine).Split('>').Split('<')[2])"
+                        If ($_ -eq "ErrorCode")
+                        {
+                            If ($cell -match "-")
+                            {
+                                $CellSplit = "$($cell.Split('-')[0].Trim())"
+                                If ($CellSplit.StartsWith('80'))
+                                {
+                                    $CellSplit = "0x$($CellSplit)"
+                                }
+                                $Row["$_"] = $CellSplit
+                            }
+                            else 
+                            {
+                                $Row["$_"] = $cell
+                            }
+                        }
+                        ElseIf ($_ -eq "ExtendedCode")
+                        {
+                            If ($cell -match "-")
+                            {
+                                $CellSplit = "$($cell.Split('-')[1].Trim())"
+                                $Row["$_"] = $CellSplit
+                            }
+                            else 
+                            {
+                                $Row["$_"] = $null
+                            }
+                        }
+                        else 
+                        {
+                            $Row["$_"] = Remove-HTMLFromString "$($cells[$t].ToString().Replace('<br>',[Environment]::NewLine).Replace('Â','').Replace('&quot;','""').Replace('&gt;','-'))"
+                        }
+                        
+                        If ($_ -ne "ErrorCode"){$t ++}
+                    }
+                    $Row["Category"] = "$($header.ToString().Split('>').Split('<')[2])"
+                    [void]$ErrorCodeTable.Rows.Add($Row)
+                }                     
+            }
+            until ($t -ge ($totalCells -1))
+            $i ++
+        }
+    }
+    until ($i -ge $headers.count)
+
+    # Remove duplicates
+    $Rows = $ErrorCodeTable.Select("ErrorCode = '0XC1900200'") 
+    $ErrorCodeTable.Rows.Remove($Rows[2])
+    $ErrorCodeTable.Rows.Remove($Rows[-1])
+
+    $Rows = $ErrorCodeTable.Select("ErrorCode = '0xC190020e'") 
+    $ErrorCodeTable.Rows.Remove($Rows[-1])
+
+    $Rows = $ErrorCodeTable.Select("ErrorCode = '0xC1900209'") 
+    $ErrorCodeTable.Rows.Remove($Rows[-1])
+
+    $Rows = $ErrorCodeTable.Select("ErrorCode = '0xC1900201'") 
+    $ErrorCodeTable.Rows.Remove($Rows[-1])
+
+    $Rows = $ErrorCodeTable.Select("ErrorCode = '0xC1900107'") 
+    $ErrorCodeTable.Rows.Remove($Rows[-1])
+
+    $Rows = $ErrorCodeTable.Select("ErrorCode = '0xC1900101' and ExtendedCode = '0x2000c'") 
+    $ErrorCodeTable.Rows.Remove($Rows[-1])
+
+    return $ErrorCodeTable
+}
 #endregion
 
 #################################
@@ -704,8 +891,8 @@ Function Get-WUErrorCodes {
 #region UpdateWUErrorCodes
 # This runs twice a month just to keep the data from ageing past the data retention period in the LA workspace
 # Remove the surrounding IF statement for a first-time run, so you have some data right away
-If ([DateTime]::UtcNow.Day -eq 7 -or [DateTime]::UtcNow.Day -eq 21)
-{
+#If ([DateTime]::UtcNow.Day -eq 7 -or [DateTime]::UtcNow.Day -eq 21)
+#{
     $WUErrorCodes = Get-WUErrorCodes
     $Table = [System.Data.DataTable]::new()
     ($WUErrorCodes[0] | Get-Member -MemberType Property).Name | foreach {
@@ -726,7 +913,28 @@ If ([DateTime]::UtcNow.Day -eq 7 -or [DateTime]::UtcNow.Day -eq 21)
     {
         $Result.StatusCode  
     } 
-}
+
+    $WindowsSetupErrorCodes = Get-WindowsSetupErrorCodes
+    $Table = [System.Data.DataTable]::new()
+    ($WindowsSetupErrorCodes[0] | Get-Member -MemberType Property).Name | foreach {
+        [void]$Table.Columns.Add($_)
+    }
+    foreach ($row in $WindowsSetupErrorCodes)
+    {
+        $Table.ImportRow($row)
+    }
+    # Post the JSON to LA workspace
+    $Json = $Table.Rows | Select ErrorCode,ExtendedCode,Description,Message,Category | ConvertTo-Json -Compress
+    $Result = Post-LogAnalyticsData -customerId $WorkspaceID -sharedKey $PrimaryKey -body ([System.Text.Encoding]::UTF8.GetBytes($Json)) -logType "SU_WindowsSetupErrorCodes"
+    If ($Result.GetType().Name -eq "ErrorRecord")
+    {
+        Write-Error -Exception $Result.Exception
+    }
+    else 
+    {
+        $Result.StatusCode  
+    } 
+#}
 #endregion
 
 #############################################
@@ -1525,11 +1733,26 @@ foreach ($Row in $DevicesDatatable.Rows)
             }
         }  
     }
-    If ($DuckandRun -eq $false -and $Row["UpdateActivity"] -eq "Installation" -and $Row["UpdateStatus"] -eq "Failure")
+    # Language arrays
+    $InstallationArray = @(
+        'Installation' # English,German
+        'Installazione' # Italian
+    )
+    $FailureArray = @(
+        'Failure' # English
+        'Fehler' # German
+        'Errore' # Italian
+    )
+    $StartedArray = @(
+        'Started' # English
+        'Gestartet' # German
+        'Avviato' # Italian
+    )
+    If ($DuckandRun -eq $false -and $Row["UpdateActivity"] -in $InstallationArray -and $Row["UpdateStatus"] -in $FailureArray)
     {
         $Row["LatestRegularUpdateStatus"] = "Installation failure"
     }
-    ElseIf ($DuckandRun -eq $false -and $Row["UpdateActivity"] -eq "Installation" -and $Row["UpdateStatus"] -eq "Started")
+    ElseIf ($DuckandRun -eq $false -and $Row["UpdateActivity"] -in $InstallationArray -and $Row["UpdateStatus"] -in $StartedArray)
     {
         $Row["LatestRegularUpdateStatus"] = "Installation started"
     }  
