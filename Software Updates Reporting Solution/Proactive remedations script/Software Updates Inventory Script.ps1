@@ -957,7 +957,53 @@ if ($null -ne $SetupHostResult)
     $DownlevelProductName = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Volatile -Name DownlevelProductName -ErrorAction SilentlyContinue | Select -ExpandProperty DownlevelProductName
     $DownlevelBuildNumber = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Volatile -Name DownlevelBuildNumber -ErrorAction SilentlyContinue | Select -ExpandProperty DownlevelBuildNumber
 }
-$OSInstallDate = Get-CimInstance -ClassName Win32_OperatingSystem -Property InstallDate -ErrorAction SilentlyContinue | Select -ExpandProperty InstallDate
+
+$UpgradeDates = @()
+# Try to get the upgrade date from the registry
+[array]$SourceOSKeys = Get-ChildItem HKLM:\System\Setup | where {$_.Name -match "Source OS"}
+If ($SourceOSKeys.Count -ge 1)
+{
+    $DateTimeFormats = @(
+        "M/d/yyyy HH:mm:ss"
+        "MM/d/yyyy HH:mm:ss"
+        "M/dd/yyyy HH:mm:ss"
+        "MM/dd/yyyy HH:mm:ss"
+    )
+    $ParsedDates = @()
+    foreach ($SourceOSKey in $SourceOSKeys)
+    {
+        $Date = $SourceOSKey.PSChildName.Split()[-2]
+        $Time = $SourceOSKey.PSChildName.Split()[-1].TrimEnd(')')
+        $DateTime = "$Date $Time"
+        foreach ($DateTimeFormat in $DateTimeFormats)
+        {
+            try { $ParsedDates += [DateTime]::ParseExact($DateTime,$DateTimeFormat,[CultureInfo]::InvariantCulture) } catch {}
+        }
+    }
+}
+If ($ParsedDates.Count -ge 1)
+{
+    $UpgradeDates += $ParsedDates | Select -Unique | Sort -Descending | Select -First 1
+}
+
+# Try to get the upgrade date from the event log
+$MessageMatchArray = @(
+    ': Feature update to '
+    ': Windows 11'
+)
+$FeatureUpdateInstallEvents = Get-WinEvent -FilterHashtable @{LogName="System";ID=19;ProviderName="Microsoft-Windows-WindowsUpdateClient"} -ErrorAction SilentlyContinue |
+Where {$_.Message -match ($MessageMatchArray -join '|')}
+If ($null -ne $FeatureUpdateInstallEvents)
+{
+    $UpgradeDates += $FeatureUpdateInstallEvents | Sort -Property TimeCreated -Descending | Select -ExpandProperty TimeCreated
+}
+
+# Use the OS install date as a fallback
+$UpgradeDates += Get-CimInstance -ClassName Win32_OperatingSystem -Property InstallDate -ErrorAction SilentlyContinue | Select -ExpandProperty InstallDate
+
+# Use the most recent legitimate date
+$OSInstallDate = $UpgradeDates | Where {([DateTime]::Now - $_).TotalSeconds -gt 0} | Sort -Descending | Select -First 1
+
 [PSCustomObject]$WindowsSetup = [Ordered]@{
     BoxResult = $BoxResult
     FailureCount = $FailureCount
