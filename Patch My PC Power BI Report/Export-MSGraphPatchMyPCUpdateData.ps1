@@ -134,6 +134,14 @@ Function Export-StatusReport {
             }
         }
     }
+    
+    # If there are no results, just add a blank row to avoid errors in the PowerBI report
+    If ($DataTable.Rows.Count -eq 0)
+    {
+        $DataTable.Columns | foreach {[array]$nullString += ""}
+        [void]$DataTable.Rows.Add($nullString)
+        Remove-Variable nullString
+    }
 
     # Export the data
     $DataTable | Export-Csv -Path "$Destination\$ReportOutputName.csv" -NoTypeInformation -Force
@@ -317,8 +325,34 @@ Function Get-DeviceInstallStatusReport {
 
     # Export the final data set
     switch ($Type) {
-        "Updates" {$UpdateDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpUpdatesDeviceInstallStatusReport.csv -NoTypeInformation -Force}
-        "Apps" {$AppDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpAppsDeviceInstallStatusReport.csv -NoTypeInformation -Force}
+        "Updates" {
+            # If there are no results, just add a blank row to avoid errors in the PowerBI report
+            If ($UpdateDeviceInstallStatusResults.Count -eq 0)
+            {
+                $DataTable.Columns | foreach {[array]$nullString += ""}
+                [void]$DataTable.Rows.Add($nullString)
+                Remove-Variable nullString
+                $DataTable | Export-CSV -Path $Destination\PmpUpdatesDeviceInstallStatusReport.csv -NoTypeInformation -Force
+            }
+            else 
+            {
+                $UpdateDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpUpdatesDeviceInstallStatusReport.csv -NoTypeInformation -Force
+            }
+        }
+        "Apps" {
+            # If there are no results, just add a blank row to avoid errors in the PowerBI report
+            If ($AppDeviceInstallStatusResults.Count -eq 0)
+            {
+                $DataTable.Columns | foreach {[array]$nullString += ""}
+                [void]$DataTable.Rows.Add($nullString)
+                Remove-Variable nullString
+                $DataTable | Export-CSV -Path $Destination\PmpAppsDeviceInstallStatusReport.csv -NoTypeInformation -Force
+            }
+            else 
+            {
+                $AppDeviceInstallStatusResults | Export-CSV -Path $Destination\PmpAppsDeviceInstallStatusReport.csv -NoTypeInformation -Force
+            }           
+        }
     }
 }
 
