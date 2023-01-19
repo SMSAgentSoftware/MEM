@@ -278,19 +278,16 @@ Function Get-DeviceInstallStatusReport {
             If ($GraphRequest.StatusCode -eq 200)
             {
                 $JSONresponse = [System.Text.Encoding]::UTF8.GetString($GraphRequest.Content) | ConvertFrom-Json
-                If ($JSONresponse.Values.Count -ge 1)
-                {     
-                    If ($DataTable.Columns.Count -eq 0)
+                If ($DataTable.Columns.Count -eq 0)
+                {
+                    foreach ($column in $JSONresponse.Schema)
                     {
-                        foreach ($column in $JSONresponse.Schema)
-                        {
-                            [void]$DataTable.Columns.Add($Column.Column)
-                        }
+                        [void]$DataTable.Columns.Add($Column.Column)
                     }
-                    foreach ($value in $JSONresponse.Values)
-                    {
-                        [void]$DataTable.Rows.Add($value)
-                    }
+                }
+                foreach ($value in $JSONresponse.Values)
+                {
+                    [void]$DataTable.Rows.Add($value)
                 }
                 $i = $i + 50
             }
