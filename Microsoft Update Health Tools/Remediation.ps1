@@ -24,11 +24,13 @@ else
 
 # Determine which cab to use
 [int]$CurrentBuild = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "CurrentBuildNumber" | Select -ExpandProperty CurrentBuildNumber
-Switch ($CurrentBuild)
+if ($CurrentBuild -ge 22000)
 {
-    17763 {$dir = "1809"}
-    18363 {$dir = "1909"}
-    default {$dir = "2004 and above"}
+    $OSVersion = "Windows11"
+}
+else 
+{
+    $OSVersion = "Windows10"    
 }
 [string]$Bitness = Get-CimInstance Win32_OperatingSystem -Property OSArchitecture | Select -ExpandProperty OSArchitecture
 Switch ($Bitness)
@@ -37,15 +39,27 @@ Switch ($Bitness)
     "32-bit" {$arch = "x86"}
     default { Write-Host "Unable to determine OS architecture"; Exit 1 }
 }
-$CabLocation = "$DownloadDirectory\$($DownloadFileName.Split('.')[0])\$dir\$arch"
+If ($CurrentBuild -eq 22621)
+{
+    $CabLocation = "$DownloadDirectory\$($DownloadFileName.Split('.')[0])\$OSVersion\22H2\$arch"   
+}
+else 
+{
+    $CabLocation = "$DownloadDirectory\$($DownloadFileName.Split('.')[0])\$OSVersion\$arch"     
+}
 $CabName = (Get-ChildItem $CabLocation -Name *.cab).pschildname
 
 # Expand the cab and get the MSI
-expand.exe /r "$CabLocation\$CabName" /F:* $DownloadDirectory
-$File = Get-Childitem -Path $DownloadDirectory\*.msi -File | where {((Get-Date).ToUniversalTime() - $_.CreationTimeUTC).TotalSeconds -lt 10}
+expand.exe /r "$CabLocation\$CabName" /F:* "$DownloadDirectory\$($DownloadFileName.Split('.')[0])"
+Start-Sleep -Seconds 5
+expand.exe /r "$DownloadDirectory\$($DownloadFileName.Split('.')[0])\UpdHealthTools.cab" /F:* "$DownloadDirectory\$($DownloadFileName.Split('.')[0])"
+Start-Sleep -Seconds 5
+$File = Get-Childitem -Path "$DownloadDirectory\$($DownloadFileName.Split('.')[0])\*.msi" -File
 
 # Install the MSI
 $Process = Start-Process -FilePath msiexec.exe -ArgumentList "/i $($File.FullName) /qn REBOOT=ReallySuppress /L*V ""$LogDirectory\$LogFile""" -Wait -PassThru
+Remove-Item "$DownloadDirectory\$($DownloadFileName.Split('.')[0])" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "$DownloadDirectory\$DownloadFileName" -Force -ErrorAction SilentlyContinue
 If ($Process.ExitCode -eq 0)
 {
     Write-Host "Microsoft Update Health tools successfully installed"
