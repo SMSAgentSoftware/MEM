@@ -100,16 +100,19 @@ Function Export-StatusReport {
         }
 
         # Convert the requests to JSON
-        $requestbase = @{
-            requests = $requests
-        }
-        $JsonBase = $requestbase | ConvertTo-Json -Depth 3
+        If ($Requests.Count -ge 1)
+        {
+            $requestbase = @{
+                requests = $requests
+            }
+            $JsonBase = $requestbase | ConvertTo-Json -Depth 3
 
-        # Send the batch
-        $URL = "https://graph.microsoft.com/beta/`$batch"
-        $batchheaders = @{'Authorization'="Bearer " + $accessToken; 'Accept'="application/json"}
-        $WebRequest = Invoke-WebRequest -Uri $URL -Method POST -Headers $batchheaders -Body $JsonBase -ContentType "application/json" -UseBasicParsing
-        $responses = ($WebRequest.Content | ConvertFrom-Json).responses | Sort-Object -Property id
+            # Send the batch
+            $URL = "https://graph.microsoft.com/beta/`$batch"
+            $batchheaders = @{'Authorization'="Bearer " + $accessToken; 'Accept'="application/json"}
+            $WebRequest = Invoke-WebRequest -Uri $URL -Method POST -Headers $batchheaders -Body $JsonBase -ContentType "application/json" -UseBasicParsing
+            $responses = ($WebRequest.Content | ConvertFrom-Json).responses | Sort-Object -Property id
+        }
 
         # process the responses into a datatable
         foreach ($response in $responses)
@@ -138,6 +141,14 @@ Function Export-StatusReport {
     # If there are no results, just add a blank row to avoid errors in the PowerBI report
     If ($DataTable.Rows.Count -eq 0)
     {
+        If ($DataTable.Columns.Count -eq 0)
+        {
+            $ColumnNames = @("ApplicationId","FailedDeviceCount","PendingInstallDeviceCount","InstalledDeviceCount","NotInstalledDeviceCount","NotApplicableDeviceCount","FailedUserCount","PendingInstallUserCount","InstalledUserCount","NotInstalledUserCount","NotApplicableUserCount")
+            foreach ($ColumnName in $ColumnNames)
+            {
+                [void]$DataTable.Columns.Add($ColumnName)
+            }
+        }
         $DataTable.Columns | foreach {[array]$nullString += ""}
         [void]$DataTable.Rows.Add($nullString)
         Remove-Variable nullString
@@ -247,7 +258,21 @@ Function Export-PmpAppsList {
     
     # Separate Intune apps and Intune updates and export only those with assignments
     [array]$script:PmpApps = $DataTable.Select("notes LIKE 'PmpAppId:*' AND assignments >= 1") 
+    If ($PmpApps.Count -eq 0)
+    {
+        $TempTable = $DataTable.DefaultView.ToTable()
+        $TempTable.Clear()
+        [void]$TempTable.Rows.Add($DataTable.Select("notes LIKE 'PmpAppId:*' AND assignments >= 1"))
+        [array]$PmpApps = $TempTable.Rows
+    }
     [array]$script:PmpUpdates = $DataTable.Select("notes LIKE 'PmpUpdateId:*' AND assignments >= 1") 
+    If ($PmpUpdates.Count -eq 0)
+    {
+        $TempTable = $DataTable.DefaultView.ToTable()
+        $TempTable.Clear()
+        [void]$TempTable.Rows.Add($DataTable.Select("notes LIKE 'PmpUpdateId:*' AND assignments >= 1"))
+        [array]$PmpUpdates = $TempTable.Rows
+    }
     $PmpApps | Export-Csv -Path $Destination\PmpApps.csv -NoTypeInformation -Force
     $PmpUpdates | Export-Csv -Path $Destination\PmpUpdates.csv -NoTypeInformation -Force
 }
@@ -326,6 +351,15 @@ Function Get-DeviceInstallStatusReport {
             # If there are no results, just add a blank row to avoid errors in the PowerBI report
             If ($UpdateDeviceInstallStatusResults.Count -eq 0)
             {
+                If ($null -eq $DataTable)
+                {
+                    $DataTable = [System.Data.DataTable]::new() 
+                    $ColumnNames = @("DeviceId","ApplicationId","UserId","DeviceName","UserPrincipalName","UserName","Platform","AppVersion","ErrorCode","InstallState","InstallStateDetail","LastModifiedDateTime","AssignmentFilterIdsExist","HexErrorCode","AppInstallState","AppInstallState_loc","AppInstallStateDetails","AppInstallStateDetails_loc")
+                    foreach ($ColumnName in $ColumnNames)
+                    {
+                        [void]$DataTable.Columns.Add($ColumnName)
+                    }
+                }
                 $DataTable.Columns | foreach {[array]$nullString += ""}
                 [void]$DataTable.Rows.Add($nullString)
                 Remove-Variable nullString
@@ -340,6 +374,15 @@ Function Get-DeviceInstallStatusReport {
             # If there are no results, just add a blank row to avoid errors in the PowerBI report
             If ($AppDeviceInstallStatusResults.Count -eq 0)
             {
+                If ($null -eq $DataTable)
+                {
+                    $DataTable = [System.Data.DataTable]::new() 
+                    $ColumnNames = @("DeviceId","ApplicationId","UserId","DeviceName","UserPrincipalName","UserName","Platform","AppVersion","ErrorCode","InstallState","InstallStateDetail","LastModifiedDateTime","AssignmentFilterIdsExist","HexErrorCode","AppInstallState","AppInstallState_loc","AppInstallStateDetails","AppInstallStateDetails_loc")
+                    foreach ($ColumnName in $ColumnNames)
+                    {
+                        [void]$DataTable.Columns.Add($ColumnName)
+                    }
+                }
                 $DataTable.Columns | foreach {[array]$nullString += ""}
                 [void]$DataTable.Rows.Add($nullString)
                 Remove-Variable nullString
