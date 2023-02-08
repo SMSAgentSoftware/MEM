@@ -588,7 +588,7 @@ Function Get-WUErrorCodes {
     [System.IO.File]::Delete($tempFile)
 
     # get the headers and data cells
-    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -notmatch "Feedback"}
+    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -match "error" -or $_ -match "success"} 
     $dataCells = $htmlarray | Select-String -SimpleMatch "<td>"
 
     # process each header
@@ -637,7 +637,7 @@ Function Get-WUErrorCodes {
     [System.IO.File]::Delete($tempFile)
 
     # get the headers and data cells
-    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -notmatch "Feedback"}
+    $headers = $htmlarray | Select-String -SimpleMatch "<h2 id=""0x"
     $dataCells = $htmlarray | Select-String -SimpleMatch "<td>"
 
     # process each header
@@ -707,7 +707,7 @@ Function Get-WindowsSetupErrorCodes {
     $htmlarray = Get-Content $tempFile -ReadCount 0
     [System.IO.File]::Delete($tempFile)
 
-    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -notmatch "More information"}
+    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -notmatch "More information" -and $_ -notmatch "In this" -and $_ -notmatch "Additional resources"}
     $dataCells = $htmlarray | Select-String -SimpleMatch "<td>", "<td "
 
     $ErrorCodeTable = [System.Data.DataTable]::new()
