@@ -958,7 +958,7 @@ if ($null -ne $SetupHostResult)
     $DownlevelBuildNumber = Get-ItemProperty -Path HKLM:\SYSTEM\Setup\MoSetup\Volatile -Name DownlevelBuildNumber -ErrorAction SilentlyContinue | Select -ExpandProperty DownlevelBuildNumber
 }
 
-$UpgradeDates = @()
+[array]$UpgradeDates = @()
 # Try to get the upgrade date from the registry
 [array]$SourceOSKeys = Get-ChildItem HKLM:\System\Setup | where {$_.Name -match "Source OS"}
 If ($SourceOSKeys.Count -ge 1)
