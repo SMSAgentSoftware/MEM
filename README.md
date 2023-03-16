@@ -1,2 +1,2 @@
-# MEM
-Microsoft Endpoint Manager related resources
+# Microsoft Intune
+Microsoft Intune related resources
