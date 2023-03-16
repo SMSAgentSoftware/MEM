@@ -1,0 +1,143 @@
+<![LOG[###########################]LOG]!><time="17:59:33.365+000" date="03-16-2023" component="Preparation" context="" type="1" thread="" file="">
+<![LOG[## Starting HP Driver Update Run ##]LOG]!><time="17:59:33.399+000" date="03-16-2023" component="Preparation" context="" type="1" thread="" file="">
+<![LOG[###########################]LOG]!><time="17:59:33.403+000" date="03-16-2023" component="Preparation" context="" type="1" thread="" file="">
+<![LOG[Disabling IE first run wizard]LOG]!><time="17:59:33.406+000" date="03-16-2023" component="Preparation" context="" type="1" thread="" file="">
+<![LOG[Finding info for latest version of HP Image Assistant (HPIA)]LOG]!><time="17:59:33.476+000" date="03-16-2023" component="DownloadHPIA" context="" type="1" thread="" file="">
+<![LOG[HPIA SoftPaq number is sp143766]LOG]!><time="17:59:34.884+000" date="03-16-2023" component="DownloadHPIA" context="" type="1" thread="" file="">
+<![LOG[Download URL is https://hpia.hpcloud.hp.com/downloads/hpia/hp-hpia-5.1.7.exe]LOG]!><time="17:59:34.886+000" date="03-16-2023" component="DownloadHPIA" context="" type="1" thread="" file="">
+<![LOG[HP Image Assistant was found locally at the current version. No need to download]LOG]!><time="17:59:34.912+000" date="03-16-2023" component="DownloadHPIA" context="" type="1" thread="" file="">
+<![LOG[Analyzing system for available updates]LOG]!><time="17:59:34.917+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[Analysis complete]LOG]!><time="18:00:14.268+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[Reading xml report]LOG]!><time="18:00:14.276+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[Found 3 software recommendations]LOG]!><time="18:00:14.339+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp79567: Essential System Updates for Microsoft Windows 10 (11.3.1)]LOG]!><time="18:00:14.375+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp100528: HP Notifications (1.1.23.1)]LOG]!><time="18:00:14.379+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp100994: System Default Settings for Windows 10 (1.4.9)]LOG]!><time="18:00:14.383+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[Found 3 driver recommendations]LOG]!><time="18:00:14.387+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp101855: Alps Alpine HID Mouse Driver (8.2206.1717.166)]LOG]!><time="18:00:14.389+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp101855: Alps Alpine HID Mouse Driver (8.2206.1717.166)]LOG]!><time="18:00:14.391+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp84986: Intel Rapid Storage Technology Driver (14.8.17.1065)]LOG]!><time="18:00:14.402+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[Found 1 BIOS recommendations]LOG]!><time="18:00:14.407+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp144504: HP Notebook System BIOS Update (N83) (01.59)]LOG]!><time="18:00:14.410+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[Found 1 firmware recommendations]LOG]!><time="18:00:14.413+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[>> sp143762: Intel Management Engine Firmware (11.8.93.4323v3)]LOG]!><time="18:00:14.416+000" date="03-16-2023" component="Analyze" context="" type="1" thread="" file="">
+<![LOG[The selected update run type is 'All'.]LOG]!><time="18:00:14.418+000" date="03-16-2023" component="Update" context="" type="1" thread="" file="">
+<![LOG[The following SoftPaqs are marked for download: sp79567, sp100528, sp100994, sp101855, sp84986, sp143762.]LOG]!><time="18:00:14.440+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[A matching recommendation was found for sp79567. The update is applicable]LOG]!><time="18:00:14.452+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading sp79567]LOG]!><time="18:00:14.455+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Successfully downloaded the CVA file from ftp.hp.com/pub/softpaq/sp79501-80000/sp79567.cva]LOG]!><time="18:00:14.942+000" date="03-16-2023" component="Update" context="" type="1" thread="" file="">
+<![LOG[Update name: Essential System Updates for Microsoft Windows 10]LOG]!><time="18:00:14.965+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Version: 11.3]LOG]!><time="18:00:14.982+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Vendor version: 11.3.1]LOG]!><time="18:00:14.987+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[SHA256 hash: 735B0EBA9D5E93620618A0177BF42C803A5DE6CFE2F11F5943A57BCF0F72A735]LOG]!><time="18:00:14.995+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Silent install command: "Setup.exe" /s "/v/qn /norestart"]LOG]!><time="18:00:15.3+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading the update from ftp.hp.com/pub/softpaq/sp79501-80000/sp79567.exe]LOG]!><time="18:00:15.29+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 100%]LOG]!><time="18:00:20.719+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Finished downloading the update]LOG]!><time="18:00:20.737+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[BITS transfer is complete]LOG]!><time="18:00:20.754+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Checking file hash]LOG]!><time="18:00:20.765+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[The hashes match]LOG]!><time="18:00:20.913+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[A matching recommendation was found for sp100528. The update is applicable]LOG]!><time="18:00:20.921+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading sp100528]LOG]!><time="18:00:20.924+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Successfully downloaded the CVA file from ftp.hp.com/pub/softpaq/sp100501-101000/sp100528.cva]LOG]!><time="18:00:20.958+000" date="03-16-2023" component="Update" context="" type="1" thread="" file="">
+<![LOG[Update name: HP Notifications]LOG]!><time="18:00:20.967+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Version: 1.1.23.1]LOG]!><time="18:00:20.983+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Vendor version: 1.1.23.1]LOG]!><time="18:00:20.986+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[SHA256 hash: 6E1C1B35C2E8644C75C1AB6893A5DD28828683EDA3CFFCC0A3A53A55619B70B8]LOG]!><time="18:00:20.995+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Silent install command: "setup.exe" /s /clone_wait "/v/qn /norestart"]LOG]!><time="18:00:21.3+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading the update from ftp.hp.com/pub/softpaq/sp100501-101000/sp100528.exe]LOG]!><time="18:00:21.13+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 86.31%]LOG]!><time="18:00:26.47+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 100%]LOG]!><time="18:00:31.74+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Finished downloading the update]LOG]!><time="18:00:31.82+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[BITS transfer is complete]LOG]!><time="18:00:31.91+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Checking file hash]LOG]!><time="18:00:31.94+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[The hashes match]LOG]!><time="18:00:31.260+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[A matching recommendation was found for sp100994. The update is applicable]LOG]!><time="18:00:31.264+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading sp100994]LOG]!><time="18:00:31.267+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Successfully downloaded the CVA file from ftp.hp.com/pub/softpaq/sp100501-101000/sp100994.cva]LOG]!><time="18:00:31.308+000" date="03-16-2023" component="Update" context="" type="1" thread="" file="">
+<![LOG[Update name: System Default Settings for Windows 10]LOG]!><time="18:00:31.324+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Version: 1.4]LOG]!><time="18:00:31.333+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Vendor version: 1.4.9]LOG]!><time="18:00:31.338+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[SHA256 hash: 6A25B7DD1C10DF48390FC87737DA4385CC8F9C2B82E0B1A1AF1A990C411421DD]LOG]!><time="18:00:31.347+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Silent install command: "Setup.exe" /s /v/qn]LOG]!><time="18:00:31.357+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading the update from ftp.hp.com/pub/softpaq/sp100501-101000/sp100994.exe]LOG]!><time="18:00:31.365+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 100%]LOG]!><time="18:00:36.395+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Finished downloading the update]LOG]!><time="18:00:36.403+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[BITS transfer is complete]LOG]!><time="18:00:36.677+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Checking file hash]LOG]!><time="18:00:36.680+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[The hashes match]LOG]!><time="18:00:36.722+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[A matching recommendation was found for sp101855. The update is applicable]LOG]!><time="18:00:36.728+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading sp101855]LOG]!><time="18:00:36.733+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Successfully downloaded the CVA file from ftp.hp.com/pub/softpaq/sp101501-102000/sp101855.cva]LOG]!><time="18:00:36.830+000" date="03-16-2023" component="Update" context="" type="1" thread="" file="">
+<![LOG[Update name: Alps HID Mouse Driver]LOG]!><time="18:00:36.842+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Version: 8.2206.1717.166]LOG]!><time="18:00:36.847+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Vendor version: 8.2206.1717.166 (WHQL)]LOG]!><time="18:00:36.850+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[SHA256 hash: A01D424720FD4ECC01052D5C766987D679870B3676897184A9494938E14FEE0C]LOG]!><time="18:00:36.855+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Silent install command: "setup.exe" /s /f2 %temp%\Alps_Install.log]LOG]!><time="18:00:36.859+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading the update from ftp.hp.com/pub/softpaq/sp101501-102000/sp101855.exe]LOG]!><time="18:00:36.866+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 55.91%]LOG]!><time="18:00:41.891+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 100%]LOG]!><time="18:00:46.903+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Finished downloading the update]LOG]!><time="18:00:46.910+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[BITS transfer is complete]LOG]!><time="18:00:46.918+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Checking file hash]LOG]!><time="18:00:46.923+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[The hashes match]LOG]!><time="18:00:47.321+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[A matching recommendation was found for sp84986. The update is applicable]LOG]!><time="18:00:47.325+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading sp84986]LOG]!><time="18:00:47.331+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Successfully downloaded the CVA file from ftp.hp.com/pub/softpaq/sp84501-85000/sp84986.cva]LOG]!><time="18:00:47.953+000" date="03-16-2023" component="Update" context="" type="1" thread="" file="">
+<![LOG[Update name: Intel Rapid Storage Technology Driver]LOG]!><time="18:00:47.963+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Version: 14.8.17.1065]LOG]!><time="18:00:47.972+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Vendor version: 14.8.17.1065]LOG]!><time="18:00:47.977+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[SHA256 hash: 6CD61D00D14F374492D79966BED05D3565466449F0355A49F979CA65F6943418]LOG]!><time="18:00:47.985+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Silent install command: "SetupRST.exe" -s -overwrite -report %temp%]LOG]!><time="18:00:47.993+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading the update from ftp.hp.com/pub/softpaq/sp84501-85000/sp84986.exe]LOG]!><time="18:00:48.4+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 100%]LOG]!><time="18:00:53.41+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Finished downloading the update]LOG]!><time="18:00:53.48+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[BITS transfer is complete]LOG]!><time="18:00:53.217+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Checking file hash]LOG]!><time="18:00:53.224+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[The hashes match]LOG]!><time="18:00:53.349+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[A matching recommendation was found for sp143762. The update is applicable]LOG]!><time="18:00:53.353+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading sp143762]LOG]!><time="18:00:53.356+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Successfully downloaded the CVA file from ftp.hp.com/pub/softpaq/sp143501-144000/sp143762.cva]LOG]!><time="18:00:53.402+000" date="03-16-2023" component="Update" context="" type="1" thread="" file="">
+<![LOG[Update name: Intel Management Engine Firmware]LOG]!><time="18:00:53.407+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Version: 11.8.93.4323]LOG]!><time="18:00:53.411+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Vendor version: 11.8.93.4323v3]LOG]!><time="18:00:53.417+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[SHA256 hash: A90AF5A2F4ED5815D61F05988384734ED1CBE6754B13563817DF540F0789746A]LOG]!><time="18:00:53.423+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Silent install command: "InstallCmdWrapper.exe"]LOG]!><time="18:00:53.428+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloading the update from ftp.hp.com/pub/softpaq/sp143501-144000/sp143762.exe]LOG]!><time="18:00:53.432+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Downloaded 100%]LOG]!><time="18:00:58.465+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Finished downloading the update]LOG]!><time="18:00:58.472+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[BITS transfer is complete]LOG]!><time="18:00:58.479+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[Checking file hash]LOG]!><time="18:00:58.483+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[The hashes match]LOG]!><time="18:00:58.545+000" date="03-16-2023" component="Download" context="" type="1" thread="" file="">
+<![LOG[There following SoftPaqs will be installed: sp79567, sp100528, sp100994, sp101855, sp84986, sp143762.]LOG]!><time="18:00:58.556+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[## sp79567: Essential System Updates for Microsoft Windows 10 (11.3) ##]LOG]!><time="18:00:58.562+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Starting the install]LOG]!><time="18:00:58.599+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[The installer has finished with exit code 3010]LOG]!><time="18:01:04.982+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Code: 3010 | Status: SUCCESS | RebootRequired: REBOOT | Message: The Intel ME FW installed successfully.  A reboot is required.]LOG]!><time="18:01:05.0+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[## sp100528: HP Notifications (1.1.23.1) ##]LOG]!><time="18:01:05.19+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Starting the install]LOG]!><time="18:01:05.58+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[The installer has finished with exit code 0]LOG]!><time="18:01:20.924+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Code: 0 | Status: SUCCESS | RebootRequired: NOREBOOT | Message: The Intel ME FW installed successfully.]LOG]!><time="18:01:20.930+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[## sp100994: System Default Settings for Windows 10 (1.4) ##]LOG]!><time="18:01:20.963+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Starting the install]LOG]!><time="18:01:21.0+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[The installer has finished with exit code 0]LOG]!><time="18:02:16.551+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Code: 0 | Status: SUCCESS | RebootRequired: NOREBOOT | Message: The Intel ME FW installed successfully.]LOG]!><time="18:02:16.556+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[## sp101855: Alps HID Mouse Driver (8.2206.1717.166) ##]LOG]!><time="18:02:16.582+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Starting the install]LOG]!><time="18:02:16.604+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[The installer has finished with exit code 0]LOG]!><time="18:02:31.680+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Code: 0 | Status: SUCCESS | RebootRequired: NOREBOOT | Message: The Intel ME FW installed successfully.]LOG]!><time="18:02:31.688+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[## sp84986: Intel Rapid Storage Technology Driver (14.8.17.1065) ##]LOG]!><time="18:02:31.721+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Starting the install]LOG]!><time="18:02:31.753+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[The installer has finished with exit code 3010]LOG]!><time="18:02:45.10+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Code: 3010 | Status: SUCCESS | RebootRequired: REBOOT | Message: The Intel ME FW installed successfully.  A reboot is required.]LOG]!><time="18:02:45.16+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[## sp143762: Intel Management Engine Firmware (11.8.93.4323) ##]LOG]!><time="18:02:45.50+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Starting the install]LOG]!><time="18:02:45.85+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[The installer has finished with exit code 0]LOG]!><time="18:04:21.706+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Code: 0 | Status: SUCCESS | RebootRequired: NOREBOOT | Message: The Intel ME FW installed successfully.]LOG]!><time="18:04:21.713+000" date="03-16-2023" component="Install" context="" type="1" thread="" file="">
+<![LOG[Successfully posted to log analytics workspace]LOG]!><time="18:04:23.85+000" date="03-16-2023" component="Post" context="" type="1" thread="" file="">
+<![LOG[Successfully posted to log analytics workspace]LOG]!><time="18:04:23.519+000" date="03-16-2023" component="Post" context="" type="1" thread="" file="">
+<![LOG[Successfully posted to log analytics workspace]LOG]!><time="18:04:23.934+000" date="03-16-2023" component="Post" context="" type="1" thread="" file="">
+<![LOG[Successfully posted to log analytics workspace]LOG]!><time="18:04:24.283+000" date="03-16-2023" component="Post" context="" type="1" thread="" file="">
+<![LOG[Successfully posted to log analytics workspace]LOG]!><time="18:04:24.604+000" date="03-16-2023" component="Post" context="" type="1" thread="" file="">
+<![LOG[Successfully posted to log analytics workspace]LOG]!><time="18:04:24.922+000" date="03-16-2023" component="Post" context="" type="1" thread="" file="">
+<![LOG[This driver update run is complete. Have a nice day!]LOG]!><time="18:04:24.978+000" date="03-16-2023" component="Completion" context="" type="1" thread="" file="">
