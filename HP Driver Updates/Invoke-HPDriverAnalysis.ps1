@@ -246,7 +246,7 @@ try
 }
 catch 
 {
-    throw
+    throw $_.Exception.Message
 }
 $script:LogFile = "$ParentDirectory\HP_Driver_Analysis.log"
 Rollover-Log
@@ -282,7 +282,7 @@ catch
     Write-Log -Message "Failed to download the HPIA web page. $($_.Exception.Message)" -Component "DownloadHPIA" -LogLevel 3
     Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
     Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-    throw
+    throw "Failed to download the HPIA web page. $($_.Exception.Message)"
 }
 $HPIASoftPaqNumber = ($HTML.Links | Where {$_.href -match "hp-hpia-"}).outerText
 $HPIADownloadURL = ($HTML.Links | Where {$_.href -match "hp-hpia-"}).href
@@ -345,7 +345,7 @@ If ($DownloadHPIA -eq $true)
             Write-Log -Message "BITS tranfer failed: $($BitsJob.ErrorDescription)" -Component "DownloadHPIA" -LogLevel 3
             Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
             Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-            throw
+            throw "BITS tranfer failed: $($BitsJob.ErrorDescription)"
         }
         Write-Log -Message "Download is finished" -Component "DownloadHPIA"
         Complete-BitsTransfer -BitsJob $BitsJob
@@ -356,7 +356,7 @@ If ($DownloadHPIA -eq $true)
         Write-Log -Message "Failed to start a BITS transfer for the HPIA: $($_.Exception.Message)" -Component "DownloadHPIA" -LogLevel 3
         Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
         Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        throw
+        throw "Failed to start a BITS transfer for the HPIA: $($_.Exception.Message)" 
     }
 }
 #endregion
@@ -382,7 +382,7 @@ If ($DownloadHPIA -eq $true)
             Write-Log -Message "HPImageAssistant not found!" -Component "Analyze" -LogLevel 3
             Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
             Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-            throw
+            throw "HPImageAssistant not found!"
         }
     }
     catch 
@@ -390,7 +390,7 @@ If ($DownloadHPIA -eq $true)
         Write-Log -Message "Failed to extract the HPIA: $($_.Exception.Message)" -Component "Analyze" -LogLevel 3
         Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
         Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        throw
+        throw "Failed to extract the HPIA: $($_.Exception.Message)"
     }
 }
 #endregion
@@ -427,7 +427,7 @@ try
         Write-Log -Message "Process exited with code $($Process.ExitCode). Expecting 0." -Component "Analyze" -LogLevel 3
         Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
         Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        throw
+        throw "Process exited with code $($Process.ExitCode). Expecting 0."
     }
 }
 catch 
@@ -435,7 +435,7 @@ catch
     Write-Log -Message "Failed to start the HPImageAssistant.exe: $($_.Exception.Message)" -Component "Analyze" -LogLevel 3
     Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
     Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-    throw
+    throw "Failed to start the HPImageAssistant.exe: $($_.Exception.Message)"
 }
 #endregion
 
@@ -544,7 +544,7 @@ try
             Write-Log -Message "Failed to parse the XML file: $($_.Exception.Message)" -Component "Analyze" -LogLevel 3
             Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
             Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-            throw
+            throw "Failed to parse the XML file: $($_.Exception.Message)" 
         }
     }
     Else  
@@ -552,7 +552,7 @@ try
         Write-Log -Message "Failed to find an XML report." -Component "Analyze" -LogLevel 3
         Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
         Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        throw
+        throw "Failed to find an XML report."
     }
 }
 catch 
@@ -560,7 +560,7 @@ catch
     Write-Log -Message "Failed to find an XML report: $($_.Exception.Message)" -Component "Analyze" -LogLevel 3
     Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
     Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-    throw
+    throw "Failed to find an XML report: $($_.Exception.Message)"
 }
 #endregion
 
