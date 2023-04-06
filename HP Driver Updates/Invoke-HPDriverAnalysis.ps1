@@ -422,12 +422,53 @@ try
         Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
         Return
     }
+    elseif ($Process.ExitCode -eq 16386) 
+    {
+        Write-Log -Message "OS version not supported!" -Component "Analyze" -LogLevel 2
+        Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Not supported" -Force
+        Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
+        Return
+    }
     Else
     {
-        Write-Log -Message "Process exited with code $($Process.ExitCode). Expecting 0." -Component "Analyze" -LogLevel 3
+        Switch ($Process.ExitCode)
+        {   
+            #1 {$ErrorDescription = "The /VerifySoftPaq command returns that the SoftPaq binary verification could not be found."}
+            #2 {$ErrorDescription = "The /VerifySoftPaq command returns that an exception occurred."}
+            #3 {$ErrorDescription = "The /VerifySoftPaq command returns that the SoftPaq binary verification was signed by an invalid company."}
+            #4 {$ErrorDescription = "The /VerifySoftPaq command returns that the SoftPaq binary verification authenticode failed."}
+            #5 {$ErrorDescription = "The /VerifySoftPaq command returns that the SoftPaq binary verification certificate chain failed."}
+            #256 {$ErrorDescription = "The analysis returned no recommendations."}
+            257 {$ErrorDescription = "There were no recommendations selected for the analysis."}
+            #3010 {$ErrorDescription = "Install Reboot Required — SoftPaq installations are successful, and at least one requires a reboot."}
+            #3020 {$ErrorDescription = "Install failed — One or more SoftPaq installations failed."}
+            4096 {$ErrorDescription = "The platform is not supported."}
+            4097 {$ErrorDescription = "The parameters are invalid."}
+            4098 {$ErrorDescription = "There is no Internet connection."}
+            #4099 {$ErrorDescription = "Invalid SoftPaq number in SPList file."}
+            4100 {$ErrorDescription = "SoftPaq My Product List is empty, so no data was processed."}
+            4101 {$ErrorDescription = "The parameter is no longer supported."}
+            8192 {$ErrorDescription = "The operation failed"}
+            8193 {$ErrorDescription = "The image capture failed."}
+            8194 {$ErrorDescription = "The output folder was not created."}
+            8195 {$ErrorDescription = "The download folder was not created."}
+            8196 {$ErrorDescription = "The supported platforms list download failed."}
+            8197 {$ErrorDescription = "The KB download failed."}
+            8198 {$ErrorDescription = "The extract folder was not created."}
+            #8199 {$ErrorDescription = "The SoftPaq download failed."}
+            #8200 {$ErrorDescription = "The SoftPaq extraction failed."}
+            12288 {$ErrorDescription = "The target file failed to open."}
+            12289 {$ErrorDescription = "The target file is invalid."}
+            16384 {$ErrorDescription = "The reference file failed to open."}
+            16385 {$ErrorDescription = "The reference file is invalid."}
+            #16386 {$ErrorDescription = "The reference file is not supported on platforms running the Windows 10 operating system."}
+            20480 {$ErrorDescription = "The operating system migration cannot be performed because the operating system architecture is not supported."}
+            default {$ErrorDescription = "Unknown error"}
+        }
+        Write-Log -Message "Process exited with code $($Process.ExitCode) ($ErrorDescription). Expecting 0." -Component "Analyze" -LogLevel 3
         Set-ItemProperty -Path $FullRegPath -Name ExecutionStatus -Value "Failed" -Force
         Remove-Item -Path $WorkingDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        throw "Process exited with code $($Process.ExitCode). Expecting 0."
+        throw "Process exited with code $($Process.ExitCode) ($ErrorDescription). Expecting 0."
     }
 }
 catch 
