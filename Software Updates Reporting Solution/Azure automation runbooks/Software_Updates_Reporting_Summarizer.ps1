@@ -695,6 +695,37 @@ Function Get-WUErrorCodes {
         }
     }
     until ($i -ge $headers.count)
+    
+    #######################
+    ## REMOVE DUPLICATES ##
+    #######################
+    # No need for duplicated error codes.
+    [array]$Duplicates = $ErrorCodeTable | 
+        Group-Object -Property ErrorCode,Category -NoElement | 
+        Where {$_.Count -ge 2} | 
+        Select -ExpandProperty Name
+    If ($Duplicates.Count -ge 1)
+    {
+        foreach ($Duplicate in $Duplicates)
+        {
+            $ErrorCode = $Duplicate.Split(',')[0]
+            $Rows = $ErrorCodeTable.Select("ErrorCode='$ErrorCode'")
+            
+            foreach ($Row in $Rows)
+            {
+                If ($ErrorCodeTable.Select("ErrorCode='$ErrorCode'").Count -gt 1)
+                {
+                    do 
+                    {
+                        $ErrorCodeTable.Rows.Remove($Row)
+                    }
+                    until ($ErrorCodeTable.Select("ErrorCode='$ErrorCode'").Count -eq 1)
+                }
+            }
+            
+        }
+    }
+    
     Return $ErrorCodeTable
 }
 
@@ -707,7 +738,7 @@ Function Get-WindowsSetupErrorCodes {
     $htmlarray = Get-Content $tempFile -ReadCount 0
     [System.IO.File]::Delete($tempFile)
 
-    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -notmatch "More information" -and $_ -notmatch "In this" -and $_ -notmatch "Additional resources"}
+    $headers = $htmlarray | Select-String -SimpleMatch "<h2 " | Where {$_ -notmatch "More information" -and $_ -notmatch "In this" -and $_ -notmatch "Additional resources" -and $_ -notmatch "Data collection" -and $_ -notmatch "Feedback"}
     $dataCells = $htmlarray | Select-String -SimpleMatch "<td>", "<td "
 
     $ErrorCodeTable = [System.Data.DataTable]::new()
