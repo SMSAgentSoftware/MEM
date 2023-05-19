@@ -64,7 +64,7 @@ $MsiLocation = "$DownloadDirectory\$($DownloadFileName.Split('.')[0])\$OSVersion
 $File = Get-Childitem -Path "$MsiLocation\*.msi" -File
 
 # Install the MSI
-$Process = Start-Process -FilePath msiexec.exe -ArgumentList "/i $($File.FullName) /qn REBOOT=ReallySuppress /L*V ""$LogDirectory\$LogFile""" -Wait -PassThru
+$Process = Start-Process -FilePath msiexec.exe -ArgumentList "/i ""$($File.FullName)"" /qn REBOOT=ReallySuppress /L*V ""$LogDirectory\$LogFile""" -Wait -PassThru
 Remove-Item "$DownloadDirectory\$($DownloadFileName.Split('.')[0])" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item "$DownloadDirectory\$DownloadFileName" -Force -ErrorAction SilentlyContinue
 If ($Process.ExitCode -eq 0)
