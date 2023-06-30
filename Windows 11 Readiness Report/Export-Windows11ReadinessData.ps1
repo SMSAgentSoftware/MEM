@@ -60,7 +60,7 @@ $Response = Invoke-MyGraphGetRequest -URL $URI
 if ($Response.StatusCode -ne 200)
 {
     Write-Warning "Graph request returned $($Response.StatusCode)). Retrying..."
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 30
     $RetryCount = 0
     do {
         $Response = Invoke-MyGraphGetRequest -URL $URI 
@@ -68,7 +68,7 @@ if ($Response.StatusCode -ne 200)
         {
             Write-Warning "Graph request returned $($Response.StatusCode)). Retrying..."
             $RetryCount ++
-            Start-Sleep -Seconds 10
+            Start-Sleep -Seconds 30
         }
     }
     Until ($Response.StatusCode -eq 200 -or $RetryCount -ge 10)
@@ -90,7 +90,7 @@ If ($JsonResponse.'@odata.nextLink')
         if ($Response.StatusCode -ne 200)
         {
             Write-Warning "Graph request returned $($Response.StatusCode)). Retrying..."
-            Start-Sleep -Seconds 10
+            Start-Sleep -Seconds 60
             $RetryCount = 0
             do {
                 $Response = Invoke-MyGraphGetRequest -URL $URI 
@@ -98,7 +98,7 @@ If ($JsonResponse.'@odata.nextLink')
                 {
                     Write-Warning "Graph request returned $($Response.StatusCode)). Retrying..."
                     $RetryCount ++
-                    Start-Sleep -Seconds 10
+                    Start-Sleep -Seconds 60
                 }
             }
             Until ($Response.StatusCode -eq 200 -or $RetryCount -ge 10)
