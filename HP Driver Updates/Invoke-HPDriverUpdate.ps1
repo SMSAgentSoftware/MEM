@@ -538,6 +538,24 @@ If ($DownloadHPIA -eq $true)
         Write-Log -Message "Download is finished" -Component "DownloadHPIA"
         Complete-BitsTransfer -BitsJob $BitsJob
         Write-Log -Message "BITS transfer is complete" -Component "DownloadHPIA"
+
+	# Clean up older HPIA versions
+	$PreviousHPIAVersions = Get-ChildItem -Path $ParentDirectory -File -Name hp-hpia-*.exe -Exclude $HPIAFileName -ErrorAction SilentlyContinue
+	If ($PreviousHPIAVersions)
+	{
+	    foreach ($PreviousHPIAVersion in $PreviousHPIAVersions)
+	    {
+	        try 
+	        {
+	            Remove-Item -Path "$ParentDirectory\$PreviousHPIAVersion" -Force -ErrorAction Stop    
+	            Write-Log -Message "Removed previous HPIA file $PreviousHPIAVersion" -Component "DownloadHPIA"
+	        }
+	        catch 
+	        {
+	            Write-Log -Message "Failed to remove file $PreviousHPIAVersion" -Component "DownloadHPIA" -LogLevel 2
+	        }
+	    }
+	}
     }
     catch 
     {
@@ -934,13 +952,30 @@ If ($SoftPaqNumbers.Count -ge 1)
             }
 
             # Get the update title
-            $SoftwareTitle = $CVAContent | Select-String -SimpleMatch "[Software Title]"
-            If ($SoftwareTitle.Count -eq 1)
-            {
-                [int]$LineNumber = $SoftwareTitle.LineNumber
-                $UpdateEntry.UpdateName = $CVAContent[$LineNumber].Split('=')[-1]
-                Write-Log -Message "Update name: $($UpdateEntry.UpdateName)" -Component "Download"
-            }
+	    $SoftwareTitle = $CVAContent | Select-String -SimpleMatch "[Software Title]"
+	    If ($SoftwareTitle.Count -eq 1)
+    	    {
+		[int]$LineNumber = $SoftwareTitle.LineNumber
+		# Try to find a US English title as the first one isn't always...
+		1..20 | foreach {
+		    $NextLineNumber = $SoftwareTitle.LineNumber + $_
+		    If ($CVAContent[$NextLineNumber].StartsWith("US="))
+		    {
+			$USEnglishTitle = $CVAContent[$NextLineNumber].Split('=')[-1]
+			return
+		    }
+		}
+		If ($USEnglishTitle)
+		{
+		    $UpdateEntry.UpdateName = $USEnglishTitle
+		    Remove-Variable USEnglishTitle -Force -ErrorAction SilentlyContinue
+		}
+		else 
+		{
+		    $UpdateEntry.UpdateName = $CVAContent[$LineNumber].Split('=')[-1]
+		}            
+		Write-Log -Message "Update name: $($UpdateEntry.UpdateName)" -Component "Download"
+	    }
 
             # Get the versions
             $SoftwareVersion = $CVAContent | Select-String -SimpleMatch "Version="
@@ -1156,7 +1191,7 @@ If ($UpdatesToInstall.Count -ge 1)
             Write-Log -Message "The installer has finished with exit code $($Process.ExitCode)" -Component "Install"
             If ($Entry.ReturnCodeList.Code -contains $Process.ExitCode)
             {
-                $CodeObject = $ReturnCodes | where {$_.Code -eq $Process.ExitCode}
+                $CodeObject = $Entry.ReturnCodeList | where {$_.Code -eq $Process.ExitCode}
                 $Entry.ReturnCode = $CodeObject.Code
                 $Entry.InstallStatus = $CodeObject.Status
                 $Entry.RebootRequired = $CodeObject.RebootRequired
