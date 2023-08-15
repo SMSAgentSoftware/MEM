@@ -350,6 +350,24 @@ If ($DownloadHPIA -eq $true)
         Write-Log -Message "Download is finished" -Component "DownloadHPIA"
         Complete-BitsTransfer -BitsJob $BitsJob
         Write-Log -Message "BITS transfer is complete" -Component "DownloadHPIA"
+
+	# Clean up older HPIA versions
+	$PreviousHPIAVersions = Get-ChildItem -Path $ParentDirectory -File -Name hp-hpia-*.exe -Exclude $HPIAFileName -ErrorAction SilentlyContinue
+	If ($PreviousHPIAVersions)
+	{
+	    foreach ($PreviousHPIAVersion in $PreviousHPIAVersions)
+	    {
+	        try 
+	        {
+	            Remove-Item -Path "$ParentDirectory\$PreviousHPIAVersion" -Force -ErrorAction Stop    
+	            Write-Log -Message "Removed previous HPIA file $PreviousHPIAVersion" -Component "DownloadHPIA"
+	        }
+	        catch 
+	        {
+	            Write-Log -Message "Failed to remove file $PreviousHPIAVersion" -Component "DownloadHPIA" -LogLevel 2
+	        }
+	    }
+	}
     }
     catch 
     {
