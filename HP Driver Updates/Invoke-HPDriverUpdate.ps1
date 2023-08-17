@@ -247,7 +247,7 @@ Function Post-LogEntry {
 
         If ($Stopwatch.Elapsed.TotalSeconds -ge 320)
         {
-            Write-Log -Message "Gave up trying to connect to the Log Analytics endpoint. The log entry will not be posted." -Component "Post" -LogLevel3
+            Write-Log -Message "Gave up trying to connect to the Log Analytics endpoint. The log entry will not be posted." -Component "Post" -LogLevel 3
             Return
         }
     }
