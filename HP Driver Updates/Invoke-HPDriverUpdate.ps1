@@ -1130,6 +1130,39 @@ else
 #endregion
 
 
+###################################
+## Clean up residual setup files ##
+###################################
+#region
+# The presence of these can cause the install.cmd to skip the driver installs
+if ([System.IO.Directory]::Exists("C:\system.sav\tweaks"))
+{
+    try 
+    {
+        [System.IO.Directory]::Move("C:\system.sav\tweaks","C:\system.sav\x_tweaks")
+        Write-Log -Message "Renamed 'C:\system.sav\tweaks' to 'C:\system.sav\x_tweaks'" -Component "Install"
+    }
+    catch 
+    {
+        Write-Log -Message "Failed to rename 'C:\system.sav\tweaks'. Driver installs may be skipped on this device" -Component "Install" -LogLevel 2
+    }   
+}
+
+if ([System.IO.File]::Exists("C:\system.sav\flags\Proteus.flg"))
+{  
+    try 
+    {
+        [System.IO.File]::Move("C:\system.sav\flags\Proteus.flg","C:\system.sav\flags\x_Proteus.flg")
+        Write-Log -Message "Renamed 'C:\system.sav\flags\Proteus.flg' to 'C:\system.sav\flags\x_Proteus.flg'" -Component "Install"
+    }
+    catch 
+    {
+        Write-Log -Message "Failed to rename 'C:\system.sav\flags\Proteus.flg'. Driver installs may be skipped on this device" -Component "Install" -LogLevel 2
+    }
+}
+#endregion
+
+
 ###########################
 ## Begin driver installs ##
 ###########################
