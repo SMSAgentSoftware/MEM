@@ -277,7 +277,8 @@ Function New-UpdateHistoryTable {
     }
 
     $URLs = @(
-        "https://aka.ms/WindowsUpdateHistory"
+        #"https://aka.ms/WindowsUpdateHistory" # 2023-10-20 - MS broke this URL and it redirects to W11 not W10
+        "https://support.microsoft.com/en-gb/topic/windows-10-update-history-7dd3071a-3906-fa2c-c342-f7f86728a6e3"
         "https://aka.ms/Windows11UpdateHistory"
     )
 
