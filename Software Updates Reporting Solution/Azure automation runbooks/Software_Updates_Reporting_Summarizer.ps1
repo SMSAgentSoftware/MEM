@@ -1756,12 +1756,27 @@ foreach ($Row in $DevicesDatatable.Rows)
     If ($QualityUpdatesDeferralInDays -ge 1 -and $DuckandRun -eq $false)
     {
         $LatestRegularUpdateReleaseDate = $Row["LatestRegularUpdateReleaseDate"]
-        If ($LatestRegularUpdateReleaseDate)
+        If (-not [System.Convert]::IsDBNull($LatestRegularUpdateReleaseDate))
         {
-            If (([DateTime]::UtcNow - ($LatestRegularUpdateReleaseDate | Get-Date)).TotalDays -lt $QualityUpdatesDeferralInDays)
+            If ($LatestRegularUpdateReleaseDate -match "AM")
             {
-                $Row["LatestRegularUpdateStatus"] = "Deferred $QualityUpdatesDeferralInDays days"
-                $DuckandRun = $true
+                $LatestRegularUpdateReleaseDate = $LatestRegularUpdateReleaseDate.Replace("AM","").Trim()
+            }            
+            try 
+            {
+                $LatestRegularUpdateReleaseDate = $LatestRegularUpdateReleaseDate | Get-Date -ErrorAction Stop   
+            }
+            catch 
+            {
+                Write-Warning "Failed to convert $LatestRegularUpdateReleaseDate to DateTime"
+            }
+            If ($LatestRegularUpdateReleaseDate -is [datetime])
+            {
+                If (([DateTime]::UtcNow - $LatestRegularUpdateReleaseDate).TotalDays -lt $QualityUpdatesDeferralInDays)
+                {
+                    $Row["LatestRegularUpdateStatus"] = "Deferred $QualityUpdatesDeferralInDays days"
+                    $DuckandRun = $true
+                }
             }
         }  
     }
