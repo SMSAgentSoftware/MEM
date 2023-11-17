@@ -286,9 +286,9 @@ Function Get-DeviceInstallStatusReport {
     {
         Write-Output "Processing $AppId"
         $i = 0
-        $Fail = $false   
         $DataTable = [System.Data.DataTable]::new() 
         $MasterArray = [System.Collections.ArrayList]::new()
+        $Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
         do {
             $bodyHash = [ordered]@{
                 skip = $i
@@ -318,11 +318,11 @@ Function Get-DeviceInstallStatusReport {
             }
             Else
             {
-                $Fail = $true
                 Write-Warning "Graph request returned status code $($GraphRequest.StatusCode)"
+                Start-Sleep -Seconds 30
             }
         }
-        Until ($JSONresponse.Values.Count -eq 0 -or $Fail -eq $true)
+        Until ($JSONresponse.Values.Count -eq 0 -or $Stopwatch.Elapsed.TotalMinutes -ge 5)
 
         foreach ($Row in $DataTable.Rows)
         {
