@@ -194,7 +194,6 @@ Function script:Get-PmpAppsList {
     If ($Content.'@odata.nextLink')
     {
         Do {
-            Write-Output "Processing $($Content.'@odata.nextLink')"
             $GraphRequest = Invoke-LocalGraphRequest -URL $Content.'@odata.nextLink' -Headers $headers -Method GET
             If ($GraphRequest.StatusCode -ne 200)
             {
