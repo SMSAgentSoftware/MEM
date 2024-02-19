@@ -245,11 +245,11 @@ Function Export-PmpAppsList {
     {
         [void]$DataTable.Rows.Add(
             $Result.assignments.count,  
-            $Result.createdDateTime,  
+            ($Result.createdDateTime | Get-Date -Format "s"), 
             $Result.description,
             $Result.displayName,
             $Result.Id,
-            $Result.lastModifiedDateTime,
+            ($Result.lastModifiedDateTime | Get-Date -Format "s"),
             $Result.notes,
             $Result.publisher
         )
@@ -311,6 +311,7 @@ Function Get-DeviceInstallStatusReport {
                 }
                 foreach ($value in $JSONresponse.Values)
                 {
+                    $value[11] = $value[11] | Get-Date -Format "s"
                     [void]$DataTable.Rows.Add($value)
                 }
                 $i = $i + 50
@@ -321,7 +322,7 @@ Function Get-DeviceInstallStatusReport {
                 Start-Sleep -Seconds 30
             }
         }
-        Until ($JSONresponse.Values.Count -eq 0 -or $Stopwatch.Elapsed.TotalMinutes -ge 5)
+        Until ($JSONresponse.Values.Count -eq 0 -or $Stopwatch.Elapsed.TotalMinutes -ge 10)
 
         foreach ($Row in $DataTable.Rows)
         {
