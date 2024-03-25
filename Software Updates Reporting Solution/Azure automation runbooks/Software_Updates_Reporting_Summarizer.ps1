@@ -1100,7 +1100,7 @@ let DevicesWithUpdateLog = DevicesWithLatestUpdates
         top-nested of EventId=EventId_d by temp2=max(1),
         top-nested of KeyWord1=KeyWord1_s by temp3=max(1),
         top-nested of KeyWord2=KeyWord2_s by temp4=max(1),
-        top-nested of RebootRequired=RebootRequired_s by temp5=max(1),
+        top-nested of RebootRequired=column_ifexists(`"RebootRequired_s`",`"`") by temp5=max(1),
         top-nested of ServiceGuid=ServiceGuid_g by temp6=max(1),
         top-nested of ServiceName=ServiceName_s by temp7=max(1),
         top-nested of TimeCreated=TimeCreated_t by temp8=max(1),
@@ -1117,7 +1117,7 @@ let DevicesWithWUClientInfo = DevicesWithUpdateLog
 let Devices = DevicesWithWUClientInfo
     | join kind=leftouter (SU_WUPolicyState_CL
     | summarize arg_max(InventoryDate_t,*) by IntuneDeviceID_g
-    | project QualityUpdatesDeferralInDays_d,FeatureUpdatesDeferralInDays_d,FeatureUpdatesPaused_d,QualityUpdatesPaused_d,FeatureUpdatePausePeriodInDays_d,QualityUpdatePausePeriodInDays_d,PauseFeatureUpdatesStartTime_t,PauseQualityUpdatesStartTime_t,PauseFeatureUpdatesEndTime_t,PauseQualityUpdatesEndTime_t,IntuneDeviceID_g
+    | project  QualityUpdatesDeferralInDays_d, FeatureUpdatesDeferralInDays_d, FeatureUpdatesPaused_d=column_ifexists(`"FeatureUpdatesPaused_d`",real(null)), QualityUpdatesPaused_d=column_ifexists(`"QualityUpdatesPaused_d`",real(null)), FeatureUpdatePausePeriodInDays_d=column_ifexists(`"FeatureUpdatePausePeriodInDays_d`",real(null)), QualityUpdatePausePeriodInDays_d=column_ifexists(`"QualityUpdatePausePeriodInDays_d`",real(null)), PauseFeatureUpdatesStartTime_t=column_ifexists(`"PauseFeatureUpdatesStartTime_t`",datetime(null)), PauseQualityUpdatesStartTime_t=column_ifexists(`"PauseQualityUpdatesStartTime_t`",datetime(null)), PauseFeatureUpdatesEndTime_t=column_ifexists(`"PauseFeatureUpdatesEndTime_t`",datetime(null)), PauseQualityUpdatesEndTime_t=column_ifexists(`"PauseQualityUpdatesEndTime_t`",datetime(null)), IntuneDeviceID_g
 )on IntuneDeviceID_g;
 Devices
 | extend IsLatestOSBuild = case(
@@ -1179,11 +1179,11 @@ Devices
     ServiceGuid=ServiceGuid,
     ServiceName=ServiceName,
     PatchRebootRequired=RebootRequired,
-    EngageReminderLastShownTime=EngageReminderLastShownTime_t,
-    ScheduledRebootTime=ScheduledRebootTime_t,
-    PendingRebootStartTime=PendingRebootStartTime_t,
+    EngageReminderLastShownTime=column_ifexists(`"EngageReminderLastShownTime_t`",datetime(null)),
+    ScheduledRebootTime=column_ifexists(`"ScheduledRebootTime_t`",datetime(null)),
+    PendingRebootStartTime=column_ifexists(`"PendingRebootStartTime_t`",datetime(null)),
     AutoUpdateStatus=AutoUpdateStatus_s,
-    WURebootRequired=RebootRequired_s,
+    WURebootRequired=column_ifexists(`"RebootRequired_s`",`"`"),
     NoAutoRebootWithLoggedOnUsers=NoAutoRebootWithLoggedOnUsers_s,
     WUServiceStartupType=WUServiceStartupType_s,
     LatestRegularUpdate,
