@@ -188,7 +188,7 @@ Function script:Get-PmpAppsList {
         Return $GraphRequest
     }
     $Content = $GraphRequest.Content | ConvertFrom-Json
-    [void]$Result.Add($Content.value)
+    [void]$Result.AddRange($Content.value)
     
     # Page through the next links if there are any
     If ($Content.'@odata.nextLink')
@@ -200,7 +200,7 @@ Function script:Get-PmpAppsList {
                 Return $GraphRequest
             }
             $Content = $GraphRequest.Content | ConvertFrom-Json
-            [void]$Result.Add($Content.value)
+            [void]$Result.AddRange($Content.value)
         }
         While ($null -ne $Content.'@odata.nextLink')
     }
